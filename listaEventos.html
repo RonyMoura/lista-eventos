@@ -370,7 +370,32 @@
         </tbody>
     </table>    
     
-    <!-- Script para filtrar a tabela -->
+    <!--Implementação de bibliotecas para comunicação com o firebase-->    
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script>
+    // VALORES QUE CONSTAM DO BANCO DE DADOS DO FIREBASE:
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGtX39eiMXhMIeUqYc4u8q1wLqhhLCAAw",
+        authDomain: "listaoeventos.firebaseapp.com",
+        projectId: "listaoeventos",
+        storageBucket: "listaoeventos.firebasestorage.app",
+        messagingSenderId: "604942189028",
+        appId: "1:604942189028:web:a882f7c0ea7009146507f1",
+        measurementId: "G-YZ6FT6PJH5", 
+      
+        databaseURL: "https://listaoeventos-default-rtdb.firebaseio.com/" // OBRIGATÓRIO para Realtime Database
+        // ... outras chaves, se quiser
+    };
+
+    // Inicializa o Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    // Obtém a referência para o banco de dados
+    const database = firebase.database();
+    // Cria uma referência para o nó onde os dados salvos serão armazenados
+    const dbRef = database.ref('autoridades_presentes'); 
+    </script>
+
     <script>
 
         // Função auxiliar de Debounce, para aplicar um delay ao chamar a função aplicarFiltro
@@ -481,104 +506,48 @@
         refTabelas.addEventListener('click', function(event) {            
             // 3. Verifica se o clique veio de um botão 'Salvar'
             if (event.target.classList.contains('btn-slr')) {
-                // O 'event.target' é o botão clicado
                 const botaoClicado = event.target;                
                 const corBotao = window.getComputedStyle(botaoClicado).backgroundColor;
                 
-                //Verifica se o botão teve a cor modificada, indica que os dados já foram salvos
+                // Verifica se o botão teve a cor modificada
                 if(corBotao == 'rgb(0, 120, 0)'){
-                    return;//mesmo que sair da função
+                    return;
                 }else{                
-                    // 1. Encontra a linha (<tr>) ancestral a partir do botão clicado
                     const linha = botaoClicado.closest("tr");
-                    
-                    // 2. Captura as células (<td>) da linha
                     const celulas = linha.querySelectorAll("td");
                 
-                        //Extrair Nome (índice 2) e Cargo (índice 3)
+                    // Extrair Nome e Cargo
                     const nome = celulas[2].textContent;
                     const cargo = celulas[3].textContent;                                       
                     
-                    /*O texto abaixo seria para aplicar o estilo da célula de origam para a célula criada:
-                    const estiloNomeOriginal = celulas[2].style; // A célula de origem é celulas[2]
-                    No entando, esse comando funciona apenas quando o estilo está inline (cdn)*/
-                                        
-                    
-                    //Obter as propriedades de estilo da celula de origem:
-                    const estiloOriginal = celulas[2];//obter a referência de estilo a partir da célula
-                    const estiloCopiado = window.getComputedStyle(estiloOriginal);
-                    const corTextoCopiado = estiloCopiado.getPropertyValue('color');
-                    const fonteNegrito = estiloCopiado.getPropertyValue('font-weight');                        
-                    
-                    //Criar uma nova linha na nova tabela
-                    const novaTabela = document.getElementById("tabela-salvos").querySelector("tbody");
-                    const novaLinha = document.createElement("tr");            
-                    //Criar células para Nome e Cargo
-                    const tdNome = document.createElement("td");
-                    tdNome.textContent = nome;
+                    // --- NOVA LÓGICA: ADICIONAR AO FIREBASE ---
+                    const novoDado = {
+                        nome: nome.trim(),
+                        cargo: cargo.trim(),
+                        etiqueta: null, // Inicialmente sem etiqueta
+                        timestamp: Date.now() // Ajuda na ordenação e unicidade
+                    };
 
-                    /*Essa linha de comando seria utilizada caso tivéssemos inserido o estilo a célula de origem de forma inline (cdn):
-                    tdNome.style.cssText = estiloNomeOriginal.cssText;
-                    Mas, como mudamos a estilização para ser aplicada pela classe em css, aplicamos conforme as linhas abaixo*/
-                    
-                    //Aplicar o estilo obtido da célula de origem:
-                    tdNome.style.color = corTextoCopiado;
-                    tdNome.style.fontWeight = fonteNegrito;
-                    const tdCargo = document.createElement("td");
-                    tdCargo.textContent = cargo;
-
-                    //A PARTIR DAQUI VAMOS MODIFICAR A FORMA COMO SE COMPORTAM OS ELEMENTOS DENTRO DA CÉLULA
-                    //Criar célula para o checkbox e para o label
-                    const tdEtiquetas = document.createElement("td");
-                    
-                    // Criar um container(div) para que o checkbox e o label fiquem dentro dele
-                    const flexContainer = document.createElement("div");
-                    flexContainer.classList.add("flex-alinhamento"); // Nova classe na DIV
-                    tdEtiquetas.appendChild(flexContainer);// inserir o container dentro da célula tdEtiquetas
-
-                    //Essas linhas incluiam um botão excluir em cada linha registrada:
-                    /*const btnExcluir = document.createElement("button");          
-                    btnExcluir.textContent = "Excluir";*/            
-                    
-                    //Criar um checkbox na linha salva:
-                    const checkEtiquetas = document.createElement("input");
-                    checkEtiquetas.type = "checkbox";
-                    checkEtiquetas.classList.add("check-custom");
-                
-                    //Linhas removidas, pois a lógica para incluir um botão de exclusão:
-                    /* 
-                    // Adicionar evento para remover a linha ao clicar em "Excluir"
-                    btnExcluir.addEventListener("click", function() {
-                        novaLinha.remove();
-                    });
-                    
-                    
-                    tdAcao.appendChild(btnExcluir);
-                    */
-                    
-                    flexContainer.appendChild(checkEtiquetas);//inserir o elemento checkEtiquetas dentro do container
-
-                    //Adicionar as células à nova linha
-                    novaLinha.appendChild(tdNome);
-                    novaLinha.appendChild(tdCargo);
-                    novaLinha.appendChild(tdEtiquetas);
-
-                    //Inserir a nova linha na nova tabela
-                    novaTabela.appendChild(novaLinha);
-                
-                    //modifica o estilo do botão após o clique:
-                    botaoClicado.classList.add('botao-salvo');
-                    botaoClicado.textContent = 'Salvo';
-                    
-                    //Salvar no localStorage:
-                    guardarDados();
+                    // Envia o novoDado para o Firebase. O 'push()' gera uma chave única (ID).
+                    dbRef.push(novoDado)
+                        .then(() => {
+                            // Se o salvamento for bem-sucedido, atualiza o botão localmente
+                            botaoClicado.classList.add('botao-salvo');
+                            botaoClicado.textContent = 'Salvo';
+                            // Nota: Não precisamos mais do 'guardarDados()' aqui, 
+                            // pois o evento de sincronização do Firebase irá desenhar a linha.
+                        })
+                        .catch((error) => {
+                            console.error("Erro ao salvar no Firebase:", error);
+                            alert("Erro ao salvar o dado. Verifique o console.");
+                        });
                 }                  
             }          
-            
-        });   
     
-         
-        //Função para limpar o inputs:
+        });
+
+
+         //Função para limpar o inputs:
         function limparInput() {
             document.getElementById("filtroIndice").value = "";
             document.getElementById("filtroNomeCargo").value = "";
@@ -596,57 +565,45 @@
             campoFiltroIndice.style.marginBottom = '10px'//volta o valor para o padrão definido inicialmente
         }
 
+
       
+        //Modificada função inserirLabel
         function inserirLabel(e){
 
-             // 1. Encontra a linha (<tr>) que foi clicada
             const linhaClicada = e.target.closest('tr');
+            const linhaCabecalho = (e.target.tagName === 'TH' || e.target.tagName === 'THEAD');
+            if (linhaCabecalho) {
+                return; // se o clique for no cabeçhado da tabela, finalizar o script
+            }
             
-            // 2. Seleciona a célula (<td>) de interesse (índice 2)
-            const celula = linhaClicada.cells[2];
-            
-            // --- MUDANÇA AQUI: Captura a DIV dentro da TD ---
-            // Seleciona a primeira DIV dentro da célula.
-            const divContainer = celula.querySelector('div');            
-            
-            //Verificar se o duplo clique foi sobre o cabeçalho da tabela:    
-            const cliqueCabecalho = (
-                e.target.tagName === "TH" || e.target.tagName === 'THEAD'
-            );
-                if(cliqueCabecalho){
-                    return;
-                }            
+            const key = linhaClicada.getAttribute('data-key'); // Pega a chave do Firebase
 
-            //Busca os elementos label dentro da div
-            const contemLabel = divContainer.querySelector('label');
-             
-            //Se houver algum elemento label na div, deve-se interromper a criação de um novo label
-            if(contemLabel){//
+            if (!key) return; // Se não tiver chave, algo deu errado, aborta.
+
+            const celula = linhaClicada.cells[2];
+            const divContainer = celula.querySelector('div');
+            let contemLabel = divContainer.querySelector('label');
+
+                //Se houver algum elemento label na div, deve-se interromper a criação de um novo label
+                if(contemLabel){
                 return;
                 //Se não houver nenhum elemento label, deve-se criar um
-            }else{
-                
-                //Cria o novo elemento <label>
-                const label = document.createElement("label");
-                            
-                label.className = "LabelRepres"; // Usar 'className' é o mais comum para manipulação CSS/JS, será de extrema importância para definir o valor do label
-                                
-                const labels = document.querySelectorAll('.LabelRepres');// retornar uma NodList dos labels            
-                
-                //Se não houver nenhum Label, considerar o valor da variável "controleLabel" = 1
-                if(labels.length == 0){
-                    controlLabel = 1;
-                }else{//caso encontre algum label, buscar o tamanho do NodList dos labels e somar 1                    
-                    controlLabel = labels.length + 1;
-                }                    
-                //Atribui o texto (presumindo que controlLabel está definido globalmente ou é uma string)
-                label.textContent = controlLabel;
-                // 5. Anexa o label AGORA DENTRO da DIV, não da TD
-                divContainer.appendChild(label);                
-            }            
-        }          
-              
+                }else{
+            
+                // Lógica de criação
+                const labels = document.querySelectorAll('#tabela-salvos .LabelRepres');
+                const controlLabel = labels.length + 1; // Pode precisar de uma lógica de contagem mais robusta se for realmente um 'Controle'
 
+                const label = document.createElement("label");
+                label.className = "LabelRepres";
+                label.textContent = controlLabel;
+                divContainer.appendChild(label);
+                                
+                // Salva a etiqueta no Firebase
+                dbRef.child(key).update({ etiqueta: controlLabel });
+                }
+        }            
+        
         //FUNÇÃO PARA OCULTAR A COLUNA DA TABELA
         /**
          * Oculta uma coluna específica de uma tabela HTML.
@@ -676,6 +633,7 @@
                 }
             }
         }
+
         
         //FUNÇÃO PARA RETORNAR PARA TABELA PRINCIPAL
         function voltarTabelaPrincipal(){
@@ -685,6 +643,66 @@
                 tabela.style.display = ''// deixar a tabela secundárioa visível
             }
         }
+
+
+        // Função para desenhar uma nova linha na tabela de salvos
+        function adicionarLinhaSalva(snapshot) {
+            const data = snapshot.val(); // Os dados do Firebase (nome, cargo, etiqueta)
+            const key = snapshot.key;   // O ID único gerado pelo Firebase
+            const tabelaBody = document.getElementById("tabela-salvos").querySelector("tbody");
+
+            // 1. Criar a nova linha e setar o ID do Firebase como data-attribute
+            const novaLinha = document.createElement("tr");
+            novaLinha.setAttribute('data-key', key); // Armazena a chave para futuras atualizações/exclusões
+
+            // 2. Criar células
+            const tdNome = document.createElement("td");
+            tdNome.textContent = data.nome;
+            tdNome.style.color = 'blue'; // Aplicar estilo da lista original se necessário
+            tdNome.style.fontWeight = 'bold';
+
+            const tdCargo = document.createElement("td");
+            tdCargo.textContent = data.cargo;
+
+            const tdEtiquetas = document.createElement("td");
+            const flexContainer = document.createElement("div");
+            flexContainer.classList.add("flex-alinhamento");
+            tdEtiquetas.appendChild(flexContainer);
+
+            // Adiciona o checkbox
+            const checkEtiquetas = document.createElement("input");
+            checkEtiquetas.type = "checkbox";
+            checkEtiquetas.classList.add("check-custom");
+            flexContainer.appendChild(checkEtiquetas);
+
+            // Se o dado tiver uma etiqueta salva, exiba-a
+            if (data.etiqueta) {
+                const label = document.createElement("label");
+                label.className = "LabelRepres";
+                label.textContent = data.etiqueta;
+                flexContainer.appendChild(label);
+                                 
+            }
+            
+            // 3. Adicionar as células à linha
+            novaLinha.appendChild(tdNome);
+            novaLinha.appendChild(tdCargo);
+            novaLinha.appendChild(tdEtiquetas);
+            
+            // 4. Inserir a nova linha na tabela
+            tabelaBody.appendChild(novaLinha);
+        }
+
+        // 5. OUVINTE DE SINCRONIZAÇÃO EM TEMPO REAL
+        dbRef.on('child_added', (snapshot) => {
+            // A função 'on' é chamada uma vez para cada item existente 
+            // e depois sempre que um novo item é adicionado por qualquer usuário.
+            adicionarLinhaSalva(snapshot);
+        });
+
+
+
+
     </script>
 
     <script>                        
