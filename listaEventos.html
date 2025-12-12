@@ -393,7 +393,53 @@
     // Obtém a referência para o banco de dados
     const database = firebase.database();
     // Cria uma referência para o nó onde os dados salvos serão armazenados
-    const dbRef = database.ref('autoridades_presentes'); 
+    const dbRef = database.ref('autoridades_presentes');
+    
+    
+    //Tratamento em caso de perda de conexão com o banco de dados:
+    // NOVO BLOCO: Monitoramento do Estado da Conexão
+    // Variável de controle para ignorar o primeiro disparo do listener.
+        // O listener é sempre disparado no carregamento, mesmo que a conexão seja True.
+        let firstLoad = true;
+        let isConnected = true; // Estado inicial
+
+        const conexaoRef = database.ref('.info/connected');
+
+        conexaoRef.on('value', (snapshot) => {
+            const novaConexao = snapshot.val();
+            
+            // 1. IGNORAR O PRIMEIRO DISPARO
+            if (firstLoad) {
+                isConnected = novaConexao; // Define o estado inicial corretamente
+                firstLoad = false;         // Desativa o controle
+                
+                // Se a conexão estiver perdida NA CARGA, exibe o aviso.
+                // (Isso lida com a situação em que o usuário carrega a página já offline, o que é raro, mas possível).
+                if (!novaConexao) {
+                    //console.warn("Conexão com Firebase perdida no carregamento. As operações de gravação serão adiadas.");
+                }
+                return; // Sai da função, ignorando o restante da lógica de mudança de estado.
+            }
+
+            // 2. LÓGICA DE MUDANÇA DE ESTADO (Executada somente após o primeiro disparo)
+            
+            if (novaConexao && !isConnected) {
+                // Conexão reestabelecida
+                isConnected = true;
+                
+                // Remove o alerta de desconexão
+                
+                //console.log("Conexão com Firebase reestabelecida.");
+
+            } else if (!novaConexao && isConnected) {
+                // Conexão perdida
+                isConnected = false;
+                
+                // Exibe o alerta para o usuário:
+                alert("ALERTA: Conexão com o servidor perdida! Os dados serão salvos localmente e enviados assim que a conexão retornar.");
+                
+            }
+        });
     </script>
 
     <script>
@@ -528,15 +574,25 @@
                         timestamp: Date.now() // Ajuda na ordenação e unicidade
                     };
 
+                    //LINHA ACRESCENTADA PARA CORRIGIR O FUNCIONAMENTO DA COR DO BOTÃO SALVAR:
+                    //MESMO SE NÃO HOUVER CONEXÃO, O BOTÃO DEVE TER A COR ALTERADA PARA O USUÁRIO EM QUESTÃO:
+                    botaoClicado.classList.add('botao-salvo');
+                    botaoClicado.textContent = 'Salvo';
+                    
+                    
                     // Envia o novoDado para o Firebase. O 'push()' gera uma chave única (ID).
                     dbRef.push(novoDado)
-                        .then(() => {
+                        
+                    /*ESSE BLOCO PERMITE A ALTERAÇÃO DE COR DO BOTÃO SALVAR APENAS QUANDO A CONEXÃO COM O BANCO DE DADOS É BEM SUCEDIDA:    
+                    .then(() => {
                             // Se o salvamento for bem-sucedido, atualiza o botão localmente
                             botaoClicado.classList.add('botao-salvo');
                             botaoClicado.textContent = 'Salvo';
                             // Nota: Não precisamos mais do 'guardarDados()' aqui, 
                             // pois o evento de sincronização do Firebase irá desenhar a linha.
                         })
+                    */    
+                    
                         .catch((error) => {
                             console.error("Erro ao salvar no Firebase:", error);
                             alert("Erro ao salvar o dado. Verifique o console.");
