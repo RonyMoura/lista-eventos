@@ -6,197 +6,240 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"><!--Essencial para ajustar a tela em dispositivos móveis-->
     
     <style>
-    *, *::before, *::after {
-    box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura/altura */
-    }
-    
-            /* Estilo da tabela */
-    table {
-        border-collapse: collapse;
-        width: 100%;/*ocupa o espaço total da tela*/
-        word-break: break-word;/*força a quebra de linhas para não causar estouro em telas pequenas*/
-    }
-    th, td {
-        border: 1px solid #333;
-        padding: 5px;
-        text-align: left;        
-    }
-    /* Cabeçalho da tabela */
-    th {
-        background-color: #EBEBEB;
-        text-align: center;
-        vertical-align: middle;
-    }
-    /*Estilização da tabela principal*/
-    #tbDados tr td:nth-child(3){/*seleciona a tabela, as linhas e aplica a estilização em cada célula de cada linha da 3 coluna*/
-        color: blue;
-        font-weight: bold;
-        min-width: 65px;/*garante um espaçamento mínimo da coluna em questão*/
-    }
-    /*aplicar o tamanho mínimo para a coluna de nomes também dessa tabela*/
-    #tbDados2 tr td:nth-child(3){
-        min-width: 65px;/*garante um espaçamento mínimo da coluna em questão*/
-    }
-
-    /*Forcar que a coluna onde estão os botões salvar, não quebre o texto (pois aplicamos o word-break-work em toda a tabela)*/
-    .tabela tr td:nth-child(2){/*força a coluna onde estão os botões não quebre o texto*/
-        /* Define que a quebra deve ocorrer apenas em espaços (comportamento padrão) */
-        word-break: normal;     
-        /* Garante que o texto em excesso não será quebrado */
-        white-space: nowrap;
-    }
-    /*A tabela-salvos não pode sofres as mesmas modificações que as demais tabelas, pois tem uma estrutura um pouco diferente*/
-    #tabela-salvos tr{
-        word-break: normal;
-	background-color: #FFFACD;
-	
-    }
-    /* Oculta a primeira coluna da tabela */
-    #tbDados th:first-child,
-    #tbDados td:first-child {
-        display: none;
-    }       
-    /* Estilo comum para campos de entrada e botões */
-    input,
-    button {
-        margin-bottom: 10px;
-        padding: 8px;
-        border-radius: 10px;
-        font-size: 16px;
-        border: 2px solid #333;
-    }
-    /*Modifica o tamanho do input Geral*/
-    .input_person{
-        width: 80%
-    }
-    /* Realce ao focar no campo */
-    input:focus {
-        border: 2px solid hsl(0, 100%, 50%);
-        outline: none;
-    }
-    /* Estilo para texto em negrito */
-    b {
-        font-size: 20px;
-    }
-    /* Estilo para botões alternativos */
-    .button_alt {
-        margin: 10px 5px;
-        padding: 3px;
-    }
-    /* Alinhamento horizontal dos elementos */
-    .linha,
-    .radio-label {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        white-space: nowrap;
-    }
-    /* Estilo específico para radio-label */
-    .radio-label {
-        font-size: 14px;
-        padding: 4px 8px;
-        border-radius: 4px;
-        background-color: #f0f0f0;
-        cursor: pointer;
-    }
-    /* Container centralizado */
-    .container-botoes {
-        position: sticky;/*mantem os elementos da div sempre visíveis*/
-        top: 0;/*onde os elementos ficaram visíveis - no caso, será no top*/
-        background-color: white;/*evita que o conteúdo da página role por trás dos elementos*/
-        border-bottom: 7px solid red;/*adiciona uma borda abaixo para indicar a divisão dos elementos*/
-        display: flex;
-        flex-direction: column;/*posiciona os itens verticamente*/
-        justify-content: center;
-        align-items: center;
-        width: 100%;/*garantir que o conteúdo ocupe 100% da tela horizontalmente*/
-        padding-top: 10px;
-        z-index: 10; /*garantir que o container se sobreponha a qualquer elemento da página, pois os checkbox estavam ficando sobre ele*/
-    }
-    /*As linhas abaixo são exclusivamente para estilizar o botão do checkbox*/
-    .check-custom {
-        /* Reseta a aparência nativa para podermos controlar o tamanho */
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-
-        /* Aumenta o tamanho (exemplo) */
-        width: 25px; 
-        height: 25px;
-
-        /* Aplica a formatação de fundo */
-        background-color: #f0f0f0; /* Cinza claro */
-        border: 1px solid #333;
-        border-radius: 4px; /* Opcional: bordas levemente arredondadas */
-    
-        /* Estilo quando marcado (o checkmark) */
-        position: relative;
-        display: inline-block; /* Necessário para o alinhamento */
-    }
-    /* Regra para o estado "MARCADO" (adiciona o V dentro da caixa) */
-    .check-custom:checked {
-        background-color: #6c757d; /* Cinza um pouco mais escuro quando marcado */
-    }
-    /* Cria o V (check-mark) usando pseudo-elemento CSS */
-    .check-custom:checked::after {
-        content: '';
-        position: absolute;
-        left: 8px;
-        top: 3px;
-        width: 6px;
-        height: 12px;
-        border: solid white;
-        border-width: 0 3px 3px 0;
-        transform: rotate(45deg);        
-    }    
-    /*Essa classe modifica a div na qual estão os elementos: checkbox e label dentro da coluna Etiqueta da segunda tabela*/
-    .flex-alinhamento{
-    /* 1. Ativa o Flexbox para esta div */
-    display: flex;    
-    flex-direction: column;/*posiciona os elementos verticalmente    
-    
-    /* 2. Centraliza os itens verticalmente (no eixo transversal) */
-    /* Isso garante que o checkbox e o label estejam centralizados no meio da altura da TD */
-    align-items: center; 
-    
-    /* 3. Centraliza os itens horizontalmente (no eixo principal) */
-    /* Isso move os dois elementos combinados para o centro da largura da TD */
-    justify-content: center;    
-    }
-
-    /* Media Query (Estilos para Desktop) - Sobrescreve apenas quando a tela for maior que 768px */
-    @media (min-width: 768px) {
-        .flex-alinhamento {
-            /* Altera para a direção horizontal (para telas maiores) */
-            flex-direction: row; 
+        *, *::before, *::after {
+        box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura/altura */
         }
         
-        /*(Opcional, mas recomendado): Adiciona um pequeno espaço entre os dois elementos na visualização desktop
-        .flex-alinhamento > *:first-child {
-            margin-right: 15px; 
-        }*/
-    }
-    /*Estilização do botão salvar após o clique*/
-    .botao-salvo {
-    background-color: rgb(0, 120, 0); /* A nova cor */
-    color: white;        
-    }
+        /* Estilo da tabela */
+        table {
+            border-collapse: collapse;
+            width: 100%;/*ocupa o espaço total da tela*/
+            word-break: break-word;/*força a quebra de linhas para não causar estouro em telas pequenas*/
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 5px;
+            text-align: left;
+            white-space: pre-line;/*respeitar as quebras de linhas dentro das células*/        
+        }
+        /* Cabeçalho da tabela */
+        th {
+            background-color: #EBEBEB;
+            text-align: center;
+            vertical-align: middle;
+        }
+        /*Estilização da tabela principal*/
+        #tbDados tr td:nth-child(3){/*seleciona a tabela, as linhas e aplica a estilização em cada célula de cada linha da 3 coluna*/
+            color: blue;
+            font-weight: bold;
+            min-width: 65px;/*garante um espaçamento mínimo da coluna em questão*/
+        }
+        /*aplicar o tamanho mínimo para a coluna de nomes também dessa tabela*/
+        #tbDados2 tr td:nth-child(3){
+            min-width: 65px;/*garante um espaçamento mínimo da coluna em questão*/
+        }
 
-    /*Estilização da container onde estão os botões(DIVS) para filtrar a tabela a partir dos índices*/
-    .botoesIndices{
-        display:flex;/*coloa os elementos em linha*/
-        flex-wrap: wrap;/*quebra a linha para não estourar*/
-        gap: 15px;/*espaçamento entre os itens*/
-        margin-bottom: 30px;/*deixar os debaix inputs mais afastados*/                
-    }
-    /*Aplicar estilização para cada div do container de índices:*/
-    .indices{
-        background-color: #f0f0f0;
-        cursor: pointer;/*modifica a célua de forma que fique como se clicável*/
-        border: 2px solid #333; 
-	border-radius: 10px;/*arredondas os cantos das bordas*/
-        padding: 10px;
-    }
+        /*Forcar que a coluna onde estão os botões salvar, não quebre o texto (pois aplicamos o word-break-work em toda a tabela)*/
+        .tabela tr td:nth-child(2){/*força a coluna onde estão os botões não quebre o texto*/
+            /* Define que a quebra deve ocorrer apenas em espaços (comportamento padrão) */
+            word-break: normal;     
+            /* Garante que o texto em excesso não será quebrado */
+            white-space: nowrap;
+        }
+        /*A tabela-salvos não pode sofres as mesmas modificações que as demais tabelas, pois tem uma estrutura um pouco diferente*/
+        #tabela-salvos tr{
+            word-break: normal;
+        background-color: #FFFACD;
+        
+        }
+        /* Oculta a primeira coluna da tabela */
+        #tbDados th:first-child,
+        #tbDados td:first-child {
+            display: none;
+        }       
+        /* Estilo comum para campos de entrada e botões */
+        input,
+        button {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 16px;
+            border: 2px solid #333;
+        }
+        /*Modifica o tamanho do input Geral*/
+        .input_person{
+            width: 80%
+        }
+        /* Realce ao focar no campo */
+        input:focus {
+            border: 2px solid hsl(0, 100%, 50%);
+            outline: none;
+        }
+        /* Estilo para texto em negrito */
+        b {
+            font-size: 20px;
+        }
+        /* Estilo para botões alternativos */
+        .button_alt {
+            margin: 10px 5px;
+            padding: 3px;
+        }
+        /* Alinhamento horizontal dos elementos */
+        .linha,
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+        /* Estilo específico para radio-label */
+        .radio-label {
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        /* Container centralizado */
+        .container-botoes {
+            position: sticky;/*mantem os elementos da div sempre visíveis*/
+            top: 0;/*onde os elementos ficaram visíveis - no caso, será no top*/
+            background-color: white;/*evita que o conteúdo da página role por trás dos elementos*/
+            border-bottom: 7px solid red;/*adiciona uma borda abaixo para indicar a divisão dos elementos*/
+            display: flex;
+            flex-direction: column;/*posiciona os itens verticamente*/
+            justify-content: center;
+            align-items: center;
+            width: 100%;/*garantir que o conteúdo ocupe 100% da tela horizontalmente*/
+            padding-top: 10px;
+            z-index: 10; /*garantir que o container se sobreponha a qualquer elemento da página, pois os checkbox estavam ficando sobre ele*/
+        }
+        /*As linhas abaixo são exclusivamente para estilizar o botão do checkbox*/
+        .check-custom {
+            /* Reseta a aparência nativa para podermos controlar o tamanho */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+
+            /* Aumenta o tamanho (exemplo) */
+            width: 25px; 
+            height: 25px;
+
+            /* Aplica a formatação de fundo */
+            background-color: #f0f0f0; /* Cinza claro */
+            border: 1px solid #333;
+            border-radius: 4px; /* Opcional: bordas levemente arredondadas */
+        
+            /* Estilo quando marcado (o checkmark) */
+            position: relative;
+            display: inline-block; /* Necessário para o alinhamento */
+        }
+        /* Regra para o estado "MARCADO" (adiciona o V dentro da caixa) */
+        .check-custom:checked {
+            background-color: #6c757d; /* Cinza um pouco mais escuro quando marcado */
+        }
+        /* Cria o V (check-mark) usando pseudo-elemento CSS */
+        .check-custom:checked::after {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 3px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);        
+        }    
+        /*Essa classe modifica a div na qual estão os elementos: checkbox e label dentro da coluna Etiqueta da segunda tabela*/
+        .flex-alinhamento{
+        /* 1. Ativa o Flexbox para esta div */
+        display: flex;    
+        flex-direction: column;/*posiciona os elementos verticalmente    
+        
+        /* 2. Centraliza os itens verticalmente (no eixo transversal) */
+        /* Isso garante que o checkbox e o label estejam centralizados no meio da altura da TD */
+        align-items: center; 
+        
+        /* 3. Centraliza os itens horizontalmente (no eixo principal) */
+        /* Isso move os dois elementos combinados para o centro da largura da TD */
+        justify-content: center;    
+        }
+
+        /* Media Query (Estilos para Desktop) - Sobrescreve apenas quando a tela for maior que 768px */
+        @media (min-width: 768px) {
+            .flex-alinhamento {
+                /* Altera para a direção horizontal (para telas maiores) */
+                flex-direction: row; 
+            }
+            
+            /*(Opcional, mas recomendado): Adiciona um pequeno espaço entre os dois elementos na visualização desktop
+            .flex-alinhamento > *:first-child {
+                margin-right: 15px; 
+            }*/
+        }
+        /*Estilização do botão salvar após o clique*/
+        .botao-salvo {
+        background-color: rgb(0, 120, 0); /* A nova cor */
+        color: white;        
+        }
+
+        /*Estilização da container onde estão os botões(DIVS) para filtrar a tabela a partir dos índices*/
+        .botoesIndices{
+            display:flex;/*coloa os elementos em linha*/
+            flex-wrap: wrap;/*quebra a linha para não estourar*/
+            gap: 15px;/*espaçamento entre os itens*/
+            margin-bottom: 30px;/*deixar os debaix inputs mais afastados*/
+            justify-content: center;  /* Alinha os itens ao centro horizontalmente */
+            align-content: center;    /* Garante o alinhamento central em múltiplas linhas */                
+        }
+        /*Aplicar estilização para cada div do container de índices:*/
+        .indices{
+            background-color: #f0f0f0;
+            cursor: pointer;/*modifica a célua de forma que fique como se clicável*/
+            border: 2px solid #333; 
+            border-radius: 10px;/*arredondas os cantos das bordas*/
+            padding: 10px;
+            transition: all 0.3s ease; /* Faz qualquer mudança levar 0.3 segundos */
+            animation: surgir 0.4s ease-out; /* Animação ao "nascer" no DOM */
+        }
+
+        /* Definição da animação de entrada, em conjunto com as linhas transition e animation da classe .indices, acima */
+		@keyframes surgir {
+    		from {
+        	opacity: 0;
+        	transform: scale(0.9); /* Começa um pouco menor */
+    		}
+    		to {
+        	opacity: 1;
+        	transform: scale(1); /* Termina no tamanho normal */
+    			}
+		}
+
+        /*ABAIXO, A ESTILIZAÇÃO PARA O CONTAINER QUE EXIBIRÁ A TABELA DE DADOS SALVOS, COMO UM RELATÓRIO:*/
+        /* O fundo escurecido que cobre toda a tela */
+        .modal-overlay {
+        position: fixed; /*trava o container na tela*/
+        top: 0;
+        left: 0;
+        width: 100vw; /*cobre toda a largura da janela*/
+        height: 100vh; /*cobre toda a altura da janela*/
+        background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+        display: none; /* Escondido por padrão */
+        justify-content: center; /* Centraliza horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        z-index: 30; /* Garante que ficará acima de tudo */
+        }
+        /* A caixa centralizada com 70% de tamanho */
+        .modal-content {
+        background-color: white;
+        width: 90%; /*tamanho rem relação à largura*/
+        height: 90%; /*tamanho em relação à altura*/
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        overflow-y: auto; /* Permite scroll se o conteúdo interno for grande */
+        }
     
     </style>
 </head>
@@ -368,7 +411,19 @@
         <tbody>
             <!-- Linhas serão adicionadas aqui -->
         </tbody>
-    </table>    
+    </table>
+    
+    <!--VAMOS ADICIONAR UM CONTAINER PARA VISUALIZAR A TABELA DOS DADOS SALVOS, COMO SE FOSSE UM RELATÓRIO:-->
+    <div style="text-align: center; margin-top: 10px;">
+        <button onclick="toggleModal()">Abrir Container</button>
+    </div>    
+    <div id="meuModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Título do Container</h2>
+        <p>Este container ocupa 70% da tela.</p>
+        <div id="tabelaRelatorio"></div>
+        <button onclick="toggleModal()">Fechar</button>
+    </div>
     
     <!--Implementação de bibliotecas para comunicação com o firebase-->    
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
@@ -400,7 +455,7 @@
     // NOVO BLOCO: Monitoramento do Estado da Conexão
     // Variável de controle para ignorar o primeiro disparo do listener.
         // O listener é sempre disparado no carregamento, mesmo que a conexão seja True.
-        let firstLoad = true;
+        let firstLoad = true;//Descarta o primeiro disparo
         let isConnected = true; // Estado inicial
 
         const conexaoRef = database.ref('.info/connected');
@@ -425,19 +480,14 @@
             
             if (novaConexao && !isConnected) {
                 // Conexão reestabelecida
-                isConnected = true;
-                
-                // Remove o alerta de desconexão
-                
+                isConnected = true;                
+                // Remove o alerta de desconexão                
                 //console.log("Conexão com Firebase reestabelecida.");
-
             } else if (!novaConexao && isConnected) {
                 // Conexão perdida
-                isConnected = false;
-                
+                isConnected = false;                
                 // Exibe o alerta para o usuário:
-                alert("ALERTA: Conexão com o servidor perdida! Os dados serão salvos localmente e enviados assim que a conexão retornar.");
-                
+                alert("ALERTA: Conexão com o servidor perdida! Os dados serão salvos localmente e enviados assim que a conexão retornar.");                
             }
         });
     </script>
@@ -817,30 +867,76 @@
 
         //DELEGAÇÃO DE EVENTO, CLIQUE DENTRO DA DIV ONDE ESTÃO OS ÍNDICES:
         containerIndices.addEventListener('click', function(e) {
-    // 1. VERIFICAÇÃO CRÍTICA: Executa a lógica SOMENTE se o alvo do clique 
-    //    tiver a classe específica 'indices'.
-    if (e.target.classList.contains('indices')) {
+        // 1. VERIFICAÇÃO CRÍTICA: Executa a lógica SOMENTE se o alvo do clique 
+        //    tiver a classe específica 'indices'.
+            if (e.target.classList.contains('indices')) {                
+                              
+                // 2. O 'e.target' agora é garantidamente a div de índice clicada
+                const textoIndice = e.target.textContent; 
+                
+                campoFiltroIndice.value = textoIndice;
+                filtrarIndice();                
+                // Lógica de Ocultação/Estilo
+                const elementos = document.getElementById('botoesIndices');
+                elementos.style.display = 'none';
+                alertaIndice.style.display = 'none';
+                campoFiltroIndice.style.marginBottom = '10px';
+               
+            }            
+        });        
         
-        // --- Início da Lógica ---
-        
-        // 2. O 'e.target' agora é garantidamente a div de índice clicada
-        const textoIndice = e.target.textContent; 
-        
-        campoFiltroIndice.value = textoIndice;
-        filtrarIndice();
-        
-        // Lógica de Ocultação/Estilo
-        const elementos = document.getElementById('botoesIndices');
-        elementos.style.display = 'none';
-        alertaIndice.style.display = 'none';
-        campoFiltroIndice.style.marginBottom = '10px';
-        
-        // --- Fim da Lógica ---
-    }
-    // Se o clique for em qualquer outro lugar dentro do container, 
-    // a função termina aqui e nada mais acontece.
-});
+        //Funcação para tornar o container da tabela de dados salvos visível:    
+        function toggleModal() {
+            const modal = document.getElementById('meuModal');
+            
+            // Verifica se está visível ou não
+            if (modal.style.display === 'flex') {                
+                modal.style.display = 'none';
+                } else {
+                const tabelaRelatorio = document.getElementById('tabelaRelatorio').replaceChildren();//mesmo que innerHTML = "" (para zerar as informações de toda a tabela)
+                modal.style.display = 'flex';
+                povoarTbRelatorios();                        
+            }
+            }
 
+        //VAMOS ADICIONAR DADOS À TABELA-RELATÓRIO:
+        function povoarTbRelatorios() {
+            const divTabelaRelatorio = document.getElementById('tabelaRelatorio');
+            const tabelaRelatorio = document.createElement('table');
+            tabelaRelatorio.id = "tabelaRelatorio";
+            const estrutura = document.createElement('thead');
+            const estrutura2 = document.createElement('tr');
+            const cabecalho = document.createElement('th');
+            cabecalho.textContent = 'NOME/CARGO';
+            estrutura2.appendChild(cabecalho);
+            estrutura.appendChild(estrutura2);           
+            tabelaRelatorio.appendChild(estrutura);
+            divTabelaRelatorio.appendChild(tabelaRelatorio);            
+    
+            
+            const tabelaSalvos = document.getElementById('tabela-salvos');
+            const linhasSalvos = tabelaSalvos.querySelectorAll('tr');
+            linhasSalvos.forEach(linha => {
+                if (linha.cells[0].tagName === 'TH') return;
+
+                const tdLinha = document.createElement('tr');
+                const tdNomeCargo = document.createElement('td');
+                tdNomeCargo.style.textAlign = 'center';
+                for (let i = 0; i < linha.cells.length - 1; i++) {
+                    const texto = linha.cells[i].textContent;
+
+                    if (i === 0) {
+                        //O innerHTML é melhor que o textContent, pois vais adicionar elementos html ao texto
+                        tdNomeCargo.innerHTML += `<strong>${texto}</strong><br>`;
+                    } else {
+                        //neste caso também, pois vamos adicionar uma quebra de linha ao texto
+                        tdNomeCargo.innerHTML += `${texto}<br>`;
+                    }
+                }
+                tdLinha.appendChild(tdNomeCargo);
+                tabelaRelatorio.appendChild(tdLinha);
+            });
+        }
     </script>
     
 </body>
