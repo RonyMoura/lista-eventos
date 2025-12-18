@@ -165,19 +165,7 @@
         /* Isso move os dois elementos combinados para o centro da largura da TD */
         justify-content: center;    
         }
-
-        /* Media Query (Estilos para Desktop) - Sobrescreve apenas quando a tela for maior que 768px */
-        @media (min-width: 768px) {
-            .flex-alinhamento {
-                /* Altera para a direção horizontal (para telas maiores) */
-                flex-direction: row; 
-            }
-            
-            /*(Opcional, mas recomendado): Adiciona um pequeno espaço entre os dois elementos na visualização desktop
-            .flex-alinhamento > *:first-child {
-                margin-right: 15px; 
-            }*/
-        }
+        
         /*Estilização do botão salvar após o clique*/
         .botao-salvo {
         background-color: rgb(0, 120, 0); /* A nova cor */
@@ -202,19 +190,7 @@
             padding: 10px;
             transition: all 0.3s ease; /* Faz qualquer mudança levar 0.3 segundos */
             animation: surgir 0.4s ease-out; /* Animação ao "nascer" no DOM */
-        }
-
-        /* Definição da animação de entrada, em conjunto com as linhas transition e animation da classe .indices, acima */
-		@keyframes surgir {
-    		from {
-        	opacity: 0;
-        	transform: scale(0.9); /* Começa um pouco menor */
-    		}
-    		to {
-        	opacity: 1;
-        	transform: scale(1); /* Termina no tamanho normal */
-    			}
-		}
+        }       
 
         /*ABAIXO, A ESTILIZAÇÃO PARA O CONTAINER QUE EXIBIRÁ A TABELA DE DADOS SALVOS, COMO UM RELATÓRIO:*/
         /* O fundo escurecido que cobre toda a tela */
@@ -239,6 +215,48 @@
         border-radius: 8px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         overflow-y: auto; /* Permite scroll se o conteúdo interno for grande */
+        }
+
+        /* Definição da animação de entrada, em conjunto com as linhas transition e animation da classe .indices, acima */
+		@keyframes surgir {
+    		from {
+        	opacity: 0;
+        	transform: scale(0.9); /* Começa um pouco menor */
+    		}
+    		to {
+        	opacity: 1;
+        	transform: scale(1); /* Termina no tamanho normal */
+    			}
+		}
+        /* Media Query (Estilos para Desktop) - Sobrescreve apenas quando a tela for maior que 768px */
+        @media (min-width: 768px) {
+            .flex-alinhamento {
+                /* Altera para a direção horizontal (para telas maiores) */
+                flex-direction: row; 
+            }
+            
+            /*(Opcional, mas recomendado): Adiciona um pequeno espaço entre os dois elementos na visualização desktop
+            .flex-alinhamento > *:first-child {
+                margin-right: 15px; 
+            }*/
+        }
+        /*PARA SIMULAR UM RELATÓRIO DA TABELA:*/
+        @media print {
+            /* Esconde tudo, mas mantém o espaço */
+            body {
+                visibility: hidden;
+            }
+            /* Mostra apenas a tabela */
+            #tabelaRelatorio, #tabelaRelatorio * {
+                visibility: visible;
+            }
+            /* Move a tabela para o topo da página para não sobrar um buraco branco em cima */
+            #tabelaRelatorio {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
         }
     
     </style>
@@ -423,6 +441,7 @@
         <p>Este container ocupa 70% da tela.</p>
         <div id="tabelaRelatorio"></div>
         <button onclick="toggleModal()">Fechar</button>
+        <button onclick="ImprimirRelatorio()">Imprimir</button>
     </div>
     
     <!--Implementação de bibliotecas para comunicação com o firebase-->    
@@ -937,6 +956,39 @@
                 tabelaRelatorio.appendChild(tdLinha);
             });
         }
+
+        function ImprimirRelatorio() {
+            window.print();
+        }
+
+        function imprimirTabela() {
+            const conteudoTabela = document.getElementById('tabelaRelatorio').outerHTML;
+            
+            // Abre uma nova janela
+            const janelaImpressao = window.open('', '', 'width=800,height=600');
+            
+            janelaImpressao.document.write(`
+                <html>
+                    <head>
+                        <title>Impressão de Relatório</title>
+                        <style>
+                            body { font-family: sans-serif; padding: 20px; }
+                            table { width: 100%; border-collapse: collapse; text-align: center; }
+                            th, td { border: 1px solid #ccc; padding: 8px; }
+                            strong { color: black; }
+                        </style>
+                    </head>
+                    <body>
+                        ${conteudoTabela}
+                    </body>
+                </html>
+            `);
+
+            janelaImpressao.document.close(); // Necessário para carregar o conteúdo
+            janelaImpressao.print();          // Abre o diálogo de impressão
+            janelaImpressao.close();          // Fecha a janela após imprimir
+        }
+
     </script>
     
 </body>
