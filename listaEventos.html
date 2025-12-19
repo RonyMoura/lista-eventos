@@ -437,8 +437,7 @@
     </div>    
     <div id="meuModal" class="modal-overlay">
     <div class="modal-content">
-        <h2>Título do Container</h2>
-        <p>Este container ocupa 70% da tela.</p>
+        <h2>Relação de autoridades presentes em ordem de precedência</h2>
         <div id="tabelaRelatorio"></div>
         <button onclick="toggleModal()">Fechar</button>
         <button onclick="ImprimirRelatorio()">Imprimir</button>
@@ -623,6 +622,7 @@
             if (event.target.classList.contains('btn-slr')) {
                 const botaoClicado = event.target;                
                 const corBotao = window.getComputedStyle(botaoClicado).backgroundColor;
+                const tabela = botaoClicado.closest('table');//captura a tabela clicada, para auxiliar na definicação do texto (cor/estilo)
                 
                 // Verifica se o botão teve a cor modificada
                 if(corBotao == 'rgb(0, 120, 0)'){
@@ -633,34 +633,27 @@
                 
                     // Extrair Nome e Cargo
                     const nome = celulas[2].textContent;
-                    const cargo = celulas[3].textContent;                                       
-                    
+                    const cargo = celulas[3].textContent;
+                    let corTexto = (tabela.id === 'tbDados');//passar true/false a depender da tabela, para definir a cor do texto
+                    if (corTexto) {corTexto = 1 }else{(corTexto = 0)};
+                     
                     // --- NOVA LÓGICA: ADICIONAR AO FIREBASE ---
                     const novoDado = {
                         nome: nome.trim(),
                         cargo: cargo.trim(),
-                        etiqueta: null, // Inicialmente sem etiqueta
+                        corTexto: corTexto,// se for true, quer dizer que se trata da tabela principal
+                        etiqueta: null, // Inicialmente sem etiqueta (informação de representação)
                         timestamp: Date.now() // Ajuda na ordenação e unicidade
                     };
 
                     //LINHA ACRESCENTADA PARA CORRIGIR O FUNCIONAMENTO DA COR DO BOTÃO SALVAR:
                     //MESMO SE NÃO HOUVER CONEXÃO, O BOTÃO DEVE TER A COR ALTERADA PARA O USUÁRIO EM QUESTÃO:
-                    botaoClicado.classList.add('botao-salvo');
+                    botaoClicado.classList.add('botao-salvo');//adiciona a cor assim que a classe é adicionada, pois a cor foi definida na classe 'botao-salvo'
                     botaoClicado.textContent = 'Salvo';
                     
                     
                     // Envia o novoDado para o Firebase. O 'push()' gera uma chave única (ID).
-                    dbRef.push(novoDado)
-                        
-                    /*ESSE BLOCO PERMITE A ALTERAÇÃO DE COR DO BOTÃO SALVAR APENAS QUANDO A CONEXÃO COM O BANCO DE DADOS É BEM SUCEDIDA:    
-                    .then(() => {
-                            // Se o salvamento for bem-sucedido, atualiza o botão localmente
-                            botaoClicado.classList.add('botao-salvo');
-                            botaoClicado.textContent = 'Salvo';
-                            // Nota: Não precisamos mais do 'guardarDados()' aqui, 
-                            // pois o evento de sincronização do Firebase irá desenhar a linha.
-                        })
-                    */    
+                    dbRef.push(novoDado)                    
                     
                         .catch((error) => {
                             console.error("Erro ao salvar no Firebase:", error);
@@ -783,9 +776,11 @@
             // 2. Criar células
             const tdNome = document.createElement("td");
             tdNome.textContent = data.nome;
-            tdNome.style.color = 'blue'; // Aplicar estilo da lista original se necessário
-            tdNome.style.fontWeight = 'bold';
-
+            //Alterar a cor apenas se a linha salva foi da tabela principal (evneto em questão)
+            if (data.corTexto == 1) {
+                tdNome.style.color = 'blue';
+                tdNome.style.fontWeight = 'bold';    
+            }
             const tdCargo = document.createElement("td");
             tdCargo.textContent = data.cargo;
 
@@ -956,39 +951,11 @@
                 tabelaRelatorio.appendChild(tdLinha);
             });
         }
-
+        
         function ImprimirRelatorio() {
             window.print();
         }
-
-        function imprimirTabela() {
-            const conteudoTabela = document.getElementById('tabelaRelatorio').outerHTML;
-            
-            // Abre uma nova janela
-            const janelaImpressao = window.open('', '', 'width=800,height=600');
-            
-            janelaImpressao.document.write(`
-                <html>
-                    <head>
-                        <title>Impressão de Relatório</title>
-                        <style>
-                            body { font-family: sans-serif; padding: 20px; }
-                            table { width: 100%; border-collapse: collapse; text-align: center; }
-                            th, td { border: 1px solid #ccc; padding: 8px; }
-                            strong { color: black; }
-                        </style>
-                    </head>
-                    <body>
-                        ${conteudoTabela}
-                    </body>
-                </html>
-            `);
-
-            janelaImpressao.document.close(); // Necessário para carregar o conteúdo
-            janelaImpressao.print();          // Abre o diálogo de impressão
-            janelaImpressao.close();          // Fecha a janela após imprimir
-        }
-
+        
     </script>
     
 </body>
