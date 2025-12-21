@@ -437,41 +437,39 @@
     </div>    
     <div id="meuModal" class="modal-overlay">
     <div class="modal-content">
-        <h2>Relação de autoridades presentes em ordem de precedência</h2>
+        <h2>Relação de autoridades</h2><!--ADICIONAR A FUNCIONALIDADE PARA EXIBIR EM ORDEM DE PRECEDÊNCIA-->
         <div id="tabelaRelatorio"></div>
         <button onclick="toggleModal()">Fechar</button>
-        <button onclick="ImprimirRelatorio()">Imprimir</button>
+        <button onclick="ImprimirRelatorio()">Imprimir</button>        
     </div>
     
     <!--Implementação de bibliotecas para comunicação com o firebase-->    
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <script>
-    // VALORES QUE CONSTAM DO BANCO DE DADOS DO FIREBASE:
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGtX39eiMXhMIeUqYc4u8q1wLqhhLCAAw",
-        authDomain: "listaoeventos.firebaseapp.com",
-        projectId: "listaoeventos",
-        storageBucket: "listaoeventos.firebasestorage.app",
-        messagingSenderId: "604942189028",
-        appId: "1:604942189028:web:a882f7c0ea7009146507f1",
-        measurementId: "G-YZ6FT6PJH5", 
-      
-        databaseURL: "https://listaoeventos-default-rtdb.firebaseio.com/" // OBRIGATÓRIO para Realtime Database
-        // ... outras chaves, se quiser
-    };
+        // VALORES QUE CONSTAM DO BANCO DE DADOS DO FIREBASE:
+        const firebaseConfig = {
+        apiKey: "AIzaSyBGtX39eiMXhMIeUqYc4u8q1wLqhhLCAAw",
+            authDomain: "listaoeventos.firebaseapp.com",
+            projectId: "listaoeventos",
+            storageBucket: "listaoeventos.firebasestorage.app",
+            messagingSenderId: "604942189028",
+            appId: "1:604942189028:web:a882f7c0ea7009146507f1",
+            measurementId: "G-YZ6FT6PJH5", 
+        
+            databaseURL: "https://listaoeventos-default-rtdb.firebaseio.com/" // OBRIGATÓRIO para Realtime Database
+            // ... outras chaves, se quiser
+        };
 
-    // Inicializa o Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    // Obtém a referência para o banco de dados
-    const database = firebase.database();
-    // Cria uma referência para o nó onde os dados salvos serão armazenados
-    const dbRef = database.ref('autoridades_presentes');
-    
-    
-    //Tratamento em caso de perda de conexão com o banco de dados:
-    // NOVO BLOCO: Monitoramento do Estado da Conexão
-    // Variável de controle para ignorar o primeiro disparo do listener.
+        // Inicializa o Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        // Obtém a referência para o banco de dados
+        const database = firebase.database();
+        // Cria uma referência para o nó onde os dados salvos serão armazenados
+        const dbRef = database.ref('autoridades_presentes');    
+        //Tratamento em caso de perda de conexão com o banco de dados:
+        // NOVO BLOCO: Monitoramento do Estado da Conexão
+        // Variável de controle para ignorar o primeiro disparo do listener.
         // O listener é sempre disparado no carregamento, mesmo que a conexão seja True.
         let firstLoad = true;//Descarta o primeiro disparo
         let isConnected = true; // Estado inicial
@@ -623,13 +621,15 @@
                 const botaoClicado = event.target;                
                 const corBotao = window.getComputedStyle(botaoClicado).backgroundColor;
                 const tabela = botaoClicado.closest('table');//captura a tabela clicada, para auxiliar na definicação do texto (cor/estilo)
-                
                 // Verifica se o botão teve a cor modificada
                 if(corBotao == 'rgb(0, 120, 0)'){
                     return;
                 }else{                
-                    const linha = botaoClicado.closest("tr");
+                    const linha = botaoClicado.closest('tr');//captura o elemento pai mais próximo do botão, no caso a linha, depois da célula
                     const celulas = linha.querySelectorAll("td");
+                    const indexLinha = linha.rowIndex;// captura o índice da linha em questão
+                    const idBotao = `${indexLinha}${tabela.id}`;
+                    botaoClicado.setAttribute('data-id', idBotao);             
                 
                     // Extrair Nome e Cargo
                     const nome = celulas[2].textContent;
@@ -643,7 +643,8 @@
                         cargo: cargo.trim(),
                         corTexto: corTexto,// se for true, quer dizer que se trata da tabela principal
                         etiqueta: null, // Inicialmente sem etiqueta (informação de representação)
-                        timestamp: Date.now() // Ajuda na ordenação e unicidade
+                        idBotao: idBotao,//id gerado para identificação da linha salva
+                        timestamp: Date.now() // Ajuda na ordenação e unicidade                        
                     };
 
                     //LINHA ACRESCENTADA PARA CORRIGIR O FUNCIONAMENTO DA COR DO BOTÃO SALVAR:
@@ -664,7 +665,6 @@
     
         });
 
-
          //Função para limpar o inputs:
         function limparInput() {
             document.getElementById("filtroIndice").value = "";
@@ -681,10 +681,7 @@
                 containerIndices.style.display = 'none';                
             }
             campoFiltroIndice.style.marginBottom = '10px'//volta o valor para o padrão definido inicialmente
-        }
-
-
-      
+        }      
         //Modificada função inserirLabel
         function inserirLabel(e){
 
@@ -720,7 +717,7 @@
                 // Salva a etiqueta no Firebase
                 dbRef.child(key).update({ etiqueta: controlLabel });
                 }
-        }            
+        }      
         
         //FUNÇÃO PARA OCULTAR A COLUNA DA TABELA
         /**
@@ -751,7 +748,6 @@
                 }
             }
         }
-
         
         //FUNÇÃO PARA RETORNAR PARA TABELA PRINCIPAL
         function voltarTabelaPrincipal(){
@@ -761,7 +757,6 @@
                 tabela.style.display = ''// deixar a tabela secundárioa visível
             }
         }
-
 
         // Função para desenhar uma nova linha na tabela de salvos
         function adicionarLinhaSalva(snapshot) {
@@ -811,18 +806,7 @@
             
             // 4. Inserir a nova linha na tabela
             tabelaBody.appendChild(novaLinha);
-        }
-
-        // 5. OUVINTE DE SINCRONIZAÇÃO EM TEMPO REAL
-        dbRef.on('child_added', (snapshot) => {
-            // A função 'on' é chamada uma vez para cada item existente 
-            // e depois sempre que um novo item é adicionado por qualquer usuário.
-            adicionarLinhaSalva(snapshot);
-        });
-
-
-
-
+        }        
     </script>
 
     <script>                        
@@ -862,13 +846,135 @@
 
             aplicarFiltros();            
         }
-            
-        //AS LINHAS ABAIXO CAPTURAM OS EVENTOS:
 
+        /*Desta forma, a função vai percorrer as tabelas por completo, mesmo usando o método has, que tora isso mais eficiente:
+        function aplicarEstiloBotoesFirebase() {
+            const linhas = tabela.querySelectorAll('tbody tr');//pega os elementos linhas da tabela tbDados
+            const linhas2 = document.querySelectorAll('#tbDados2 tbody tr');//pega os elementos linhas da tabela tbDados2
+            linhas.forEach(linha => {
+                const idLinha = `${linha.rowIndex}${'tbDados'}`;
+                vericaIdCorresp(idLinha, linha);
+            });
+            linhas2.forEach(linha => {
+                const idLinha = `${linha.rowIndex}${'tbDados2'}`;
+                vericaIdCorresp(idLinha, linha);
+            });            
+            function vericaIdCorresp(idLinha, elementoLinha) {                                
+                
+                if (listaIDsSalvos.has(idLinha)) {
+                    const botao = elementoLinha.querySelector('.btn-slr');
+                    if (botao) {
+                        botao.classList.add('botao-salvo');
+                        botao.textContent = 'Salvo';
+                    }
+                }
+            }
+
+        }*/
+
+        /*Desta forma, vamos buscar dentro da tabela a linha exata que deve ser alterada, não percorrendo tudo pelo for:*/
+        // Adicionamos o parâmetro idNovo que agora pode ser opcional (padrão null)
+        function aplicarEstiloBotoesFirebase(idNovo = null) {
+        
+            // 1. Declaramos a sub-função no topo para ela estar disponível para todos
+            function executarPintura(elementoLinha) {
+                if (!elementoLinha) return;
+                const botao = elementoLinha.querySelector('.btn-slr');
+                if (botao) {
+                    botao.classList.add('botao-salvo');
+                    botao.textContent = 'Salvo';
+                }
+            }
+
+            // 2. Lógica para atualização em tempo real (Atalho)
+            if (idNovo) {
+                const indice = parseInt(idNovo); 
+                
+                // CORREÇÃO DA LÓGICA: Verificamos o '2' primeiro por ser mais específico
+                const seletorTabela = idNovo.includes('tbDados2') ? '#tbDados2' : '#tbDados';
+                const tabelaAlvo = document.querySelector(seletorTabela);
+
+                if (tabelaAlvo) {
+                    const linhaEspecifica = tabelaAlvo.rows[indice];
+                    if (linhaEspecifica) {
+                        executarPintura(linhaEspecifica);
+                        }
+                }
+                return; 
+            }
+
+            // 3. Lógica para o carregamento inicial (Loop)
+            const linhas = document.querySelectorAll('#tbDados tbody tr');
+            const linhas2 = document.querySelectorAll('#tbDados2 tbody tr');
+
+            linhas.forEach(linha => {
+                const idLinha = `${linha.rowIndex}${'tbDados'}`;
+                if (listaIDsSalvos.has(idLinha)) executarPintura(linha);
+            });
+
+            linhas2.forEach(linha => {
+                const idLinha = `${linha.rowIndex}${'tbDados2'}`;
+                if (listaIDsSalvos.has(idLinha)) executarPintura(linha);
+            });
+        }        
+        
+        //VAMOS ADICIONAR DADOS À TABELA-RELATÓRIO:
+        function povoarTbRelatorios() {
+            const divTabelaRelatorio = document.getElementById('tabelaRelatorio');
+            const tabelaRelatorio = document.createElement('table');
+            tabelaRelatorio.id = "tabelaRelatorio";
+            const estrutura = document.createElement('thead');
+            const estrutura2 = document.createElement('tr');
+            const cabecalho = document.createElement('th');
+            cabecalho.textContent = 'NOME/CARGO';
+            estrutura2.appendChild(cabecalho);
+            estrutura.appendChild(estrutura2);           
+            tabelaRelatorio.appendChild(estrutura);
+            divTabelaRelatorio.appendChild(tabelaRelatorio);            
+            const tabelaSalvos = document.getElementById('tabela-salvos');
+            const linhasSalvos = tabelaSalvos.querySelectorAll('tr');
+            linhasSalvos.forEach(linha => {
+                if (linha.cells[0].tagName === 'TH') return;
+
+                const tdLinha = document.createElement('tr');
+                const tdNomeCargo = document.createElement('td');
+                tdNomeCargo.style.textAlign = 'center';
+                for (let i = 0; i < linha.cells.length - 1; i++) {
+                    const texto = linha.cells[i].textContent;
+
+                    if (i === 0) {
+                        //O innerHTML é melhor que o textContent, pois vais adicionar elementos html ao texto
+                        tdNomeCargo.innerHTML += `<strong>${texto}</strong><br>`;
+                    } else {
+                        //neste caso também, pois vamos adicionar uma quebra de linha ao texto
+                        tdNomeCargo.innerHTML += `${texto}<br>`;
+                    }
+                }
+                tdLinha.appendChild(tdNomeCargo);
+                tabelaRelatorio.appendChild(tdLinha);
+            });
+        }        
+        function ImprimirRelatorio() {
+            window.print();
+        }
+        //Funcação para tornar o container da tabela de dados salvos visível:    
+        function toggleModal() {
+            const modal = document.getElementById('meuModal');
+            
+            // Verifica se está visível ou não
+            if (modal.style.display === 'flex') {                
+                modal.style.display = 'none';
+                } else {
+                const tabelaRelatorio = document.getElementById('tabelaRelatorio').replaceChildren();//mesmo que innerHTML = "" (para zerar as informações de toda a tabela)
+                modal.style.display = 'flex';
+                povoarTbRelatorios();                        
+            }
+        }
+
+        //AS LINHAS ABAIXO CAPTURAM OS EVENTOS:
         // Adiciona eventos de escuta para os campos de filtro
         campoFiltroNomeCargo.addEventListener('keyup', filtroDebounced);
         campoFiltroIndice.addEventListener('keyup', filtrarIndice);
-
         
         //Eventos dos botões de opções
         opcao.forEach((radio) => {
@@ -894,69 +1000,53 @@
                 const elementos = document.getElementById('botoesIndices');
                 elementos.style.display = 'none';
                 alertaIndice.style.display = 'none';
-                campoFiltroIndice.style.marginBottom = '10px';
-               
+                campoFiltroIndice.style.marginBottom = '10px';               
             }            
-        });        
-        
-        //Funcação para tornar o container da tabela de dados salvos visível:    
-        function toggleModal() {
-            const modal = document.getElementById('meuModal');
+        });       
+
+        //A tecnica do Set deixa mais performático, pois altera a forma como o navegdor buscará os dados
+        let listaIDsSalvos = new Set();//Criamos uma variável global para guardar os IDs que já estão no banco
+
+        function carregarIdsFirebase(){//Função para buscar esses IDs no carregamento
+            const referencia = firebase.database().ref('autoridades_presentes');// Aqui você aponta para o caminho onde salvou os dados (ex: 'dados_salvos')
             
-            // Verifica se está visível ou não
-            if (modal.style.display === 'flex') {                
-                modal.style.display = 'none';
-                } else {
-                const tabelaRelatorio = document.getElementById('tabelaRelatorio').replaceChildren();//mesmo que innerHTML = "" (para zerar as informações de toda a tabela)
-                modal.style.display = 'flex';
-                povoarTbRelatorios();                        
-            }
-            }
+            //Desta forma, ele vai carregar repetidas vezes o set do firebase, todos os dados que estão lá:
+            /*
+            referencia.once('value', (snapshot) => {
+                // Limpamos o Set para evitar duplicatas se a função rodar de novo
+                listaIDsSalvos.clear();
 
-        //VAMOS ADICIONAR DADOS À TABELA-RELATÓRIO:
-        function povoarTbRelatorios() {
-            const divTabelaRelatorio = document.getElementById('tabelaRelatorio');
-            const tabelaRelatorio = document.createElement('table');
-            tabelaRelatorio.id = "tabelaRelatorio";
-            const estrutura = document.createElement('thead');
-            const estrutura2 = document.createElement('tr');
-            const cabecalho = document.createElement('th');
-            cabecalho.textContent = 'NOME/CARGO';
-            estrutura2.appendChild(cabecalho);
-            estrutura.appendChild(estrutura2);           
-            tabelaRelatorio.appendChild(estrutura);
-            divTabelaRelatorio.appendChild(tabelaRelatorio);            
-    
-            
-            const tabelaSalvos = document.getElementById('tabela-salvos');
-            const linhasSalvos = tabelaSalvos.querySelectorAll('tr');
-            linhasSalvos.forEach(linha => {
-                if (linha.cells[0].tagName === 'TH') return;
-
-                const tdLinha = document.createElement('tr');
-                const tdNomeCargo = document.createElement('td');
-                tdNomeCargo.style.textAlign = 'center';
-                for (let i = 0; i < linha.cells.length - 1; i++) {
-                    const texto = linha.cells[i].textContent;
-
-                    if (i === 0) {
-                        //O innerHTML é melhor que o textContent, pois vais adicionar elementos html ao texto
-                        tdNomeCargo.innerHTML += `<strong>${texto}</strong><br>`;
-                    } else {
-                        //neste caso também, pois vamos adicionar uma quebra de linha ao texto
-                        tdNomeCargo.innerHTML += `${texto}<br>`;
+                snapshot.forEach((filho) => {
+                    const dado = filho.val();
+                    if (dado.idBotao) {
+                        // Adicionamos o ID recuperado na nossa lista de consulta rápida
+                        listaIDsSalvos.add(dado.idBotao);
                     }
-                }
-                tdLinha.appendChild(tdNomeCargo);
-                tabelaRelatorio.appendChild(tdLinha);
-            });
-        }
-        
-        function ImprimirRelatorio() {
-            window.print();
-        }
-        
-    </script>
-    
+                });*/            
+
+            //Desta forma, vai apenas adicionar as atualizações, evitando consumo excessivo de dados:
+            referencia.on('child_added',(snapshot) => {
+                const dado = snapshot.val();
+                const idNovo = dado.idBotao;
+                //Se o id não estiver, adiciona e pinta:
+                if (idNovo && !listaIDsSalvos.has(idNovo)) {
+                    listaIDsSalvos.add(idNovo);
+                    aplicarEstiloBotoesFirebase(idNovo);
+                    }
+            })                        
+        }        
+        //Ouvinte de sincronização em tempo real da tabela-salvos
+        dbRef.on('child_added', (snapshot) => {
+            // A função 'on' é chamada uma vez para cada item existente 
+            // e depois sempre que um novo item é adicionado por qualquer usuário.
+            adicionarLinhaSalva(snapshot);
+        });
+        //Disparado assim que a página é reiniciada
+        document.addEventListener('DOMContentLoaded', () => {
+            // A página terminou de carregar o HTML
+            carregarIdsFirebase();
+        });
+
+    </script>    
 </body>
 </html>
