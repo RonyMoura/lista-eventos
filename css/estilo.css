@@ -42,8 +42,9 @@
         #tabela-salvos tr{
             word-break: normal;
         background-color: #FFFACD;
-        
         }
+        #tabela-salvos tr:nth-child(even) {background-color: #FFDDA8}/*efeito zebra. Deve ser exatamente como está*/
+        
         /* Oculta a primeira coluna da tabela */
         #tbDados th:first-child,
         #tbDados td:first-child {
