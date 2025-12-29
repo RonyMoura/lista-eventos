@@ -185,31 +185,6 @@
             animation: surgir 0.4s ease-out; /* Animação ao "nascer" no DOM */
         }       
 
-        /*ABAIXO, A ESTILIZAÇÃO PARA O CONTAINER QUE EXIBIRÁ A TABELA DE DADOS SALVOS, COMO UM RELATÓRIO:*/
-        /* O fundo escurecido que cobre toda a tela */
-        .modal-overlay {
-        position: fixed; /*trava o container na tela*/
-        top: 0;
-        left: 0;
-        width: 100vw; /*cobre toda a largura da janela*/
-        height: 100vh; /*cobre toda a altura da janela*/
-        background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
-        display: none; /* Escondido por padrão */
-        justify-content: center; /* Centraliza horizontalmente */
-        align-items: center; /* Centraliza verticalmente */
-        z-index: 30; /* Garante que ficará acima de tudo */
-        }
-        /* A caixa centralizada com 70% de tamanho */
-        .modal-content {
-        background-color: white;
-        width: 90%; /*tamanho rem relação à largura*/
-        height: 90%; /*tamanho em relação à altura*/
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        overflow-y: auto; /* Permite scroll se o conteúdo interno for grande */
-        }
-
         /* Definição da animação de entrada, em conjunto com as linhas transition e animation da classe .indices, acima */
 		@keyframes surgir {
     		from {
@@ -233,22 +208,59 @@
                 margin-right: 15px; 
             }*/
         }
+
+        /*ABAIXO, A ESTILIZAÇÃO PARA O CONTAINER QUE EXIBIRÁ A TABELA DE DADOS SALVOS, COMO UM RELATÓRIO:*/
+        /* O fundo escurecido que cobre toda a tela */
+        .modal-overlay {
+        position: fixed; /*trava o container na tela*/
+        top: 0;
+        left: 0;
+        width: 100vw; /*cobre toda a largura da janela*/
+        height: 100vh; /*cobre toda a altura da janela*/
+        background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+        display: none; /* Escondido por padrão */
+        justify-content: center; /* Centraliza horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        z-index: 30; /* Garante que ficará acima de tudo */
+        }
+        /* A caixa centralizada com 70% de tamanho */
+        .modal-content {
+        background-color: white;
+        width: 90%; /*tamanho rem relação à largura*/
+        height: 90%; /*tamanho em relação à altura*/
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        overflow-y: auto; /* Permite scroll se o conteúdo interno for grande */
+        }      
+        
         /*PARA SIMULAR UM RELATÓRIO DA TABELA:*/
         @media print {
-            /* Esconde tudo, mas mantém o espaço */
-            body {
-                visibility: hidden;
+            /* 1. Esconde REALMENTE tudo o que não deve aparecer (remove o espaço) */
+            body > *:not(.modal-overlay) {
+                display: none !important;/*desconsidera os espaços deixados pelos demais elementos que ficaram invisíveis*/
             }
-            /* Mostra apenas a tabela */
-            #tabelaRelatorio, #tabelaRelatorio * {
-                visibility: visible;
+
+            /* 2. Ajusta o overlay e o conteúdo para não terem comportamentos de tela */
+            .modal-overlay {
+                position: static !important; /* Remove o 'fixed' que causa duplicação em várias páginas */
+                display: block !important;
+                background: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
-            /* Move a tabela para o topo da página para não sobrar um buraco branco em cima */
+            .modal-content {
+                position: static !important;
+                width: 100% !important;
+                height: auto !important; /* Permite que a tabela cresça para baixo */
+                box-shadow: none !important;
+                padding: 0 !important;
+                overflow: visible !important; /* Essencial para não cortar a tabela */
+            }
+            /* 3. Garante que a tabela use a largura total do papel */
             #tabelaRelatorio {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
+                width: 99% !important;
+                border-collapse: collapse;
             }
         }
     
