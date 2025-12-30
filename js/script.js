@@ -76,17 +76,16 @@
     // DECLARAÇÃO DE VARIÁVEIS:
     const campoFiltroNomeCargo = document.getElementById('filtroNomeCargo');
     const campoFiltroIndice = document.getElementById('filtroIndice');
-    let tabela = document.getElementById('tbDados');
     const opcao = document.querySelectorAll('input[name="opcaoNomeCargo"]');
     const refTabelas = document.getElementById('tabelas');//as tabelas foram envolvidas nessa div para, a partir do elemento pai, com a delegação de eventos capturar os cliques nas duas tabelas
     let numCaract; //é para puxar a tabela principal sempre que um caracter for apagado
     let coluna = 2; //inicia com a referência para a coluna nome, e muda ao mudar a opção via radio
     let controlLabel;//variável para iniciar a contagem do label, que será inserido na função inserirLabel        
     const containerIndices = document.getElementById('botoesIndices');//obter os elementos que compõem os índices
-    
+    let tabela;
 
     // Função para aplicar os filtros
-    function aplicarFiltros() { 
+    function aplicarFiltros() {
         //Se ambos os campos (inputs) estiverem vazios, retornar para a tabela principal:
         const inputsVazios = (campoFiltroIndice.value === "" &&
         campoFiltroNomeCargo.value === "" && tabela.id == 'tbDados2');
@@ -582,10 +581,12 @@
         adicionarLinhaSalva(snapshot);
     });
     //Disparado assim que a página é reiniciada
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async() => {
         // A página terminou de carregar o HTML
         carregarIdsFirebase();
-    });
+        await carregarTabelasHTML(); //A função deve denecessáriamente ser carrega 'sincronamente', pois temos valores que devem ser completamente carregados
+        tabela = document.getElementById('tbDados');
+        });
 
     /*Ouvinta para capturar a inserção de etiquetas:*/
     dbRef.on('child_changed', (snapshot) => { //(dbRef.on(''))
@@ -637,3 +638,44 @@
         }
     })
 
+    /*
+    //Como temos dados externos ao HTML, precisamos fazer com que o navegador espere até que esses dados sejam carregados, por isso a combinação async e await:
+    //Abaixo temos a opção de buscar por apenas um arquivo:
+    async function carregarTabelaHTML() {
+        try {
+            const resposta = await fetch('tbDados.html');
+            
+            if (!resposta.ok) {
+                throw new Error(`Erro HTTP! status: ${resposta.status}`);
+            }
+            const htmlText = await resposta.text();        
+            document.getElementById('tabelas').insertAdjacentHTML('beforeend', htmlText);
+            
+        } catch (erro) {
+            alert("Falha ao carregar: " + erro.message);
+        }    
+    }
+    */
+
+    //Mesmo conceito das linhas acima, mas agora solicitamos dois aquivos:
+    async function carregarTabelasHTML() {
+    try {
+        // Dispara os dois pedidos ao mesmo tempo
+        const [resp1, resp2] = await Promise.all([
+            fetch('tbDados.html'),
+            fetch('tbDados2.html')
+        ]);
+
+        // Converte ambos para texto
+        const html1 = await resp1.text();
+        const html2 = await resp2.text();
+
+        // Injeta nos respectivos lugares
+        document.getElementById('tabelas').innerHTML = html1; 
+        // Se for na mesma div, use += para não apagar a primeira
+        document.getElementById('tabelas').innerHTML += html2; 
+
+    } catch (erro) {
+        alert("Erro ao carregar uma das tabelas:", erro);
+    }
+}
