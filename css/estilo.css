@@ -2,6 +2,11 @@
         box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura/altura */
         }
         
+        h1, h2{
+            margin-top: 20px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
         /* Estilo da tabela */
         table {
             border-collapse: collapse;

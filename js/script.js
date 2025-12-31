@@ -82,7 +82,8 @@
     let coluna = 2; //inicia com a referência para a coluna nome, e muda ao mudar a opção via radio
     let controlLabel;//variável para iniciar a contagem do label, que será inserido na função inserirLabel        
     const containerIndices = document.getElementById('botoesIndices');//obter os elementos que compõem os índices
-    let tabela;
+    let tabela;// Por se tratar de arquivos externos, fez-se necessária a delcaração em escopo global
+    const mapaBotoes = new Map();//armezanar os botões que foram salvos. O Set foi substituído, por armazenas apenas listas o que obriga o script percorrer a tabela em busca de um texto específico
 
     // Função para aplicar os filtros
     function aplicarFiltros() {
@@ -158,15 +159,11 @@
         voltarTabelaPrincipal();
         aplicarFiltros();
     }
-    
-        
 
-
-            
     // DETECTA O EVENTO POR DELEGAÇÃO DE EVENTOS (ELEMENTO FILHO ATÉ O ELEMENTO PAI)
     //Deteca os cliques dos botões salvar, dentro das tabelas 
     refTabelas.addEventListener('click', function(event) {            
-        // 3. Verifica se o clique veio de um botão 'Salvar'
+        // Verifica se o clique veio de um botão 'Salvar'
         if (event.target.classList.contains('btn-slr')) {
             const botaoClicado = event.target;                
             const corBotao = window.getComputedStyle(botaoClicado).backgroundColor;
@@ -179,7 +176,8 @@
                 const celulas = linha.querySelectorAll("td");
                 const indexLinha = linha.rowIndex;// captura o índice da linha em questão
                 const idBotao = `${indexLinha}${tabela.id}`;
-                botaoClicado.setAttribute('data-id', idBotao);             
+                botaoClicado.setAttribute('data-id', idBotao);
+                mapaBotoes.set(idBotao, botaoClicado);//mapeando o elemento html             
             
                 // Extrair Nome e Cargo
                 const nome = celulas[2].textContent;
@@ -385,78 +383,7 @@
 
         aplicarFiltros();            
     }
-
-    /*Desta forma, a função vai percorrer as tabelas por completo, mesmo usando o método has, que tora isso mais eficiente:
-    function aplicarEstiloBotoesFirebase() {
-        const linhas = tabela.querySelectorAll('tbody tr');//pega os elementos linhas da tabela tbDados
-        const linhas2 = document.querySelectorAll('#tbDados2 tbody tr');//pega os elementos linhas da tabela tbDados2
-        linhas.forEach(linha => {
-            const idLinha = `${linha.rowIndex}${'tbDados'}`;
-            vericaIdCorresp(idLinha, linha);
-        });
-        linhas2.forEach(linha => {
-            const idLinha = `${linha.rowIndex}${'tbDados2'}`;
-            vericaIdCorresp(idLinha, linha);
-        });            
-        function vericaIdCorresp(idLinha, elementoLinha) {                                
-            
-            if (listaIDsSalvos.has(idLinha)) {
-                const botao = elementoLinha.querySelector('.btn-slr');
-                if (botao) {
-                    botao.classList.add('botao-salvo');
-                    botao.textContent = 'Salvo';
-                }
-            }
-        }
-
-    }*/
-
-    /*Desta forma, vamos buscar dentro da tabela a linha exata que deve ser alterada, não percorrendo tudo pelo for:*/
-    // Adicionamos o parâmetro idNovo que agora pode ser opcional (padrão null)
-    function aplicarEstiloBotoesFirebase(idNovo = null) {
-    
-        // 1. Declaramos a sub-função no topo para ela estar disponível para todos
-        function executarPintura(elementoLinha) {
-            if (!elementoLinha) return;
-            const botao = elementoLinha.querySelector('.btn-slr');
-            if (botao) {
-                botao.classList.add('botao-salvo');
-                botao.textContent = 'Salvo';
-            }
-        }
-
-        // 2. Lógica para atualização em tempo real (Atalho)
-        if (idNovo) {
-            const indice = parseInt(idNovo); 
-            
-            // CORREÇÃO DA LÓGICA: Verificamos o '2' primeiro por ser mais específico
-            const seletorTabela = idNovo.includes('tbDados2') ? '#tbDados2' : '#tbDados';
-            const tabelaAlvo = document.querySelector(seletorTabela);
-
-            if (tabelaAlvo) {
-                const linhaEspecifica = tabelaAlvo.rows[indice];
-                if (linhaEspecifica) {
-                    executarPintura(linhaEspecifica);
-                    }
-            }
-            return; 
-        }
-
-        // 3. Lógica para o carregamento inicial (Loop)
-        const linhas = document.querySelectorAll('#tbDados tbody tr');
-        const linhas2 = document.querySelectorAll('#tbDados2 tbody tr');
-
-        linhas.forEach(linha => {
-            const idLinha = `${linha.rowIndex}${'tbDados'}`;
-            if (listaIDsSalvos.has(idLinha)) executarPintura(linha);
-        });
-
-        linhas2.forEach(linha => {
-            const idLinha = `${linha.rowIndex}${'tbDados2'}`;
-            if (listaIDsSalvos.has(idLinha)) executarPintura(linha);
-        });
-    }        
-    
+        
     //VAMOS ADICIONAR DADOS À TABELA-RELATÓRIO:
     function povoarTbRelatorios() {
         const divTabelaRelatorio = document.getElementById('tabelaRelatorio');
@@ -541,46 +468,44 @@
             alertaIndice.style.display = 'none';
             campoFiltroIndice.style.marginBottom = '10px';               
         }            
-    });       
+    });
 
-    //A tecnica do Set deixa mais performático, pois altera a forma como o navegdor buscará os dados
-    let listaIDsSalvos = new Set();//Criamos uma variável global para guardar os IDs que já estão no banco
-            
-    function carregarIdsFirebase(){//Função para buscar esses IDs no carregamento
+    function carregarIdsFirebase(){//Função para buscar esses IDs no carregamento       
         
-        //Desta forma, ele vai carregar repetidas vezes o set do firebase, todos os dados que estão lá:
-        /*
-        dbRef.once('value', (snapshot) => {
-            // Limpamos o Set para evitar duplicatas se a função rodar de novo
-            listaIDsSalvos.clear();
-
-            snapshot.forEach((filho) => {
-                const dado = filho.val();
-                if (dado.idBotao) {
-                    // Adicionamos o ID recuperado na nossa lista de consulta rápida
-                    listaIDsSalvos.add(dado.idBotao);
-                }
-            });*/            
+        //Nas versões anteriores, temos um script que baixa o banco completamente         
 
         //Desta forma, vai apenas adicionar as atualizações, evitando consumo excessivo de dados:
         dbRef.on('child_added',(snapshot) => {
             const dado = snapshot.val();
-            const idNovo = dado.idBotao;
-            //Se o id não estiver, adiciona e pinta:
-            if (idNovo && !listaIDsSalvos.has(idNovo)) {
-                listaIDsSalvos.add(idNovo);
-                aplicarEstiloBotoesFirebase(idNovo);
-                }
+            const idNovo = dado.idBotao;//é justamente a juntação do índice da linha da tabela com o id da tabela
+            
+           if (!mapaBotoes.has(idNovo)) {
+                const tabelas = {
+                'tbDados': document.querySelector('#tbDados'),
+                'tbDados2': document.querySelector('#tbDados2')
+                };
+              
+                if (idNovo) {
+                    const nomeTabela = idNovo.includes('tbDados2') ? 'tbDados2' : 'tbDados';
+                    const tabelaAlvo = tabelas[nomeTabela]; // Acesso direto ao objeto da tabela
+                    const linha = tabelaAlvo.rows[parseInt(idNovo)];
+                    const idLinha = `${linha.rowIndex}${'tbDados'}`;
+                    mapaBotoes.set(idLinha, linha);
+                    const botao = linha.querySelector('.btn-slr');
+                    botao.classList.add('botao-salvo');
+                    botao.textContent = 'Salvo';
+                }                
+           }    
         })   
         
-    }        
+    }
     //Ouvinte de sincronização em tempo real da tabela-salvos
     dbRef.on('child_added', (snapshot) => {
         // A função 'on' é chamada uma vez para cada item existente 
         // e depois sempre que um novo item é adicionado por qualquer usuário.
         adicionarLinhaSalva(snapshot);
     });
-    //Disparado assim que a página é reiniciada
+    //Disparado assim que a página é iniciada/reiniciada
     document.addEventListener('DOMContentLoaded', async() => {
         // A página terminou de carregar o HTML
         carregarIdsFirebase();
@@ -637,27 +562,9 @@
             caixa.checked = dados.estadoCheck;  //muda o estado do elemento
         }
     })
-
     /*
-    //Como temos dados externos ao HTML, precisamos fazer com que o navegador espere até que esses dados sejam carregados, por isso a combinação async e await:
-    //Abaixo temos a opção de buscar por apenas um arquivo:
-    async function carregarTabelaHTML() {
-        try {
-            const resposta = await fetch('tbDados.html');
-            
-            if (!resposta.ok) {
-                throw new Error(`Erro HTTP! status: ${resposta.status}`);
-            }
-            const htmlText = await resposta.text();        
-            document.getElementById('tabelas').insertAdjacentHTML('beforeend', htmlText);
-            
-        } catch (erro) {
-            alert("Falha ao carregar: " + erro.message);
-        }    
-    }
+    Verificar os arquivos das versões anteriores
     */
-
-    //Mesmo conceito das linhas acima, mas agora solicitamos dois aquivos:
     async function carregarTabelasHTML() {
     try {
         // Dispara os dois pedidos ao mesmo tempo
