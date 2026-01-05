@@ -94,6 +94,7 @@
     <!--TABELA ONDE OS DADOS SERÃO GRAVADOS-->
     <h1>Autoridades presentes:</h1>
     <span style="color: blue;">Apenas os nomes em azul possuem etiqueta.</span>
+    <div id="teste"></div>
     <table id="tabela-salvos">
         <thead>
             <tr>
@@ -114,14 +115,26 @@
     <div id="meuModal" class="modal-overlay">
     <div class="modal-content">
         <h2>Relação de autoridades</h2><!--ADICIONAR A FUNCIONALIDADE PARA EXIBIR EM ORDEM DE PRECEDÊNCIA-->
-        <div id="tabelaRelatorio"></div>
-        <button onclick="toggleModal()">Fechar</button>
-        <button onclick="ImprimirRelatorio()">Imprimir</button>        
-    </div>
+        <div id="div-tabelaRelatorio"></div>
+        <button style="margin-top: 10px;" onclick="toggleModal()">Fechar</button>
+        <button style="margin-left: 20px;" onclick="ImprimirRelatorio()">Imprimir</button>        
+    </div>    
+
+    <!--Biblioteca para aplicar a funcionalidade de classificação da tabela - os arquivos foram salvos diretamente:
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.number.min.js"></script>
+    -->
     
     <!--Implementação de bibliotecas para comunicação com o firebase-->    
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script><!--Para utilizar com a autenticação de usuários-->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-    <script src="js/script.js"></script>    
+
+
+    
+    <!--Implementação de arquivos externos-->
+    <script src="js/script.js"></script>
+    <script src="js/tablesort.min.js"></script>
+    <script src="js/tablesort.namber.min.js"></script>    
 </body>
 </html>

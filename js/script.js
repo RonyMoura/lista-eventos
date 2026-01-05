@@ -1,65 +1,141 @@
-// VALORES QUE CONSTAM DO BANCO DE DADOS DO FIREBASE:
-    const firebaseConfig = {
+let database;
+let dbRef;
+let firstLoad = true;
+let isConnected = true;
+let tabela;
+const campoFiltroNomeCargo = document.getElementById('filtroNomeCargo');
+const campoFiltroIndice = document.getElementById('filtroIndice');
+const opcao = document.querySelectorAll('input[name="opcaoNomeCargo"]');
+const refTabelas = document.getElementById('tabelas');//as tabelas foram envolvidas nessa div para, a partir do elemento pai, com a delegação de eventos capturar os cliques nas duas tabelas
+let numCaract; //é para puxar a tabela principal sempre que um caracter for apagado
+let coluna = 2; //inicia com a referência para a coluna nome, e muda ao mudar a opção via radio
+let controlLabel;//variável para iniciar a contagem do label, que será inserido na função inserirLabel        
+const containerIndices = document.getElementById('botoesIndices');//obter os elementos que compõem os índices 
+const mapaBotoes = new Map();//armezanar os botões que foram salvos. O Set foi substituído, por armazenas apenas listas o que obriga o script percorrer a tabela em busca de um texto específico
+const linhasSalvos = new Map();// armezenar as linhas da tabela-salvos
+
+//Inicialização da configuração do rirebase:
+const firebaseConfig = {
     apiKey: "AIzaSyBGtX39eiMXhMIeUqYc4u8q1wLqhhLCAAw",
-        authDomain: "listaoeventos.firebaseapp.com",
-        projectId: "listaoeventos",
-        storageBucket: "listaoeventos.firebasestorage.app",
-        messagingSenderId: "604942189028",
-        appId: "1:604942189028:web:a882f7c0ea7009146507f1",
-        measurementId: "G-YZ6FT6PJH5", 
-    
-        databaseURL: "https://listaoeventos-default-rtdb.firebaseio.com/" // OBRIGATÓRIO para Realtime Database
-        // ... outras chaves, se quiser
-    };
+    authDomain: "listaoeventos.firebaseapp.com",
+    projectId: "listaoeventos",
+    storageBucket: "listaoeventos.firebasestorage.app",
+    messagingSenderId: "604942189028",
+    appId: "1:604942189028:web:a882f7c0ea7009146507f1",
+    measurementId: "G-YZ6FT6PJH5", 
+    databaseURL: "https://listaoeventos-default-rtdb.firebaseio.com/"
+};
 
-    // Inicializa o Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    // Obtém a referência para o banco de dados
-    const database = firebase.database();
-    // Cria uma referência para o nó onde os dados salvos serão armazenados
-    const dbRef = database.ref('autoridades_presentes');    
-    //Tratamento em caso de perda de conexão com o banco de dados:
-    // NOVO BLOCO: Monitoramento do Estado da Conexão
-    // Variável de controle para ignorar o primeiro disparo do listener.
-    // O listener é sempre disparado no carregamento, mesmo que a conexão seja True.
-    let firstLoad = true;//Descarta o primeiro disparo
-    let isConnected = true; // Estado inicial
+firebase.initializeApp(firebaseConfig);
 
-    const conexaoRef = database.ref('.info/connected');
-
-    conexaoRef.on('value', (snapshot) => {
-        const novaConexao = snapshot.val();
+// 1. O OBSERVADOR DE LOGIN ENCAPSULA A INICIALIZAÇÃO
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // Agora o login foi feito, podemos definir o banco com segurança
+        database = firebase.database();
+        dbRef = database.ref('autoridades_presentes');
         
-        // 1. IGNORAR O PRIMEIRO DISPARO
-        if (firstLoad) {
-            isConnected = novaConexao; // Define o estado inicial corretamente
-            firstLoad = false;         // Desativa o controle
+        //console.log("Acesso autorizado para:", user.uid);
+
+        //MOVA A LÓGICA DE CONEXÃO PARA DENTRO DO IF (USER)
+        const conexaoRef = database.ref('.info/connected');
+        
+        //LÓGICA PARA VERIFICAR OS STATUS DA CONEXÃO COM O BANCO DE DADOS
+        conexaoRef.on('value', (snapshot) => {
+            const novaConexao = snapshot.val();
             
-            // Se a conexão estiver perdida NA CARGA, exibe o aviso.
-            // (Isso lida com a situação em que o usuário carrega a página já offline, o que é raro, mas possível).
-            if (!novaConexao) {
-                //console.warn("Conexão com Firebase perdida no carregamento. As operações de gravação serão adiadas.");
+            if (firstLoad) {
+                isConnected = novaConexao;
+                firstLoad = false;
+                return;
             }
-            return; // Sai da função, ignorando o restante da lógica de mudança de estado.
-        }
 
-        // 2. LÓGICA DE MUDANÇA DE ESTADO (Executada somente após o primeiro disparo)
+            if (novaConexao && !isConnected) {
+                isConnected = true;
+            } else if (!novaConexao && isConnected) {
+                isConnected = false;
+                alert("ALERTA: Conexão perdida! Os dados serão enviados assim que a conexão retornar.");
+            }
+        });
+
+    //Ouvinte de sincronização em tempo real da tabela-salvos
+    dbRef.on('child_added', (snapshot) => {
+        // A função 'on' é chamada uma vez para cada item existente 
+        // e depois sempre que um novo item é adicionado por qualquer usuário.
+        adicionarLinhaSalva(snapshot);
+    });
+
+    
+    //Desta forma, vai apenas adicionar as atualizações, evitando consumo excessivo de dados:
+    dbRef.on('child_added',(snapshot) => {
+        const dado = snapshot.val();
+        const idNovo = dado.idBotao;//é justamente a juntação do índice da linha da tabela com o id da tabela
         
-        if (novaConexao && !isConnected) {
-            // Conexão reestabelecida
-            isConnected = true;                
-            // Remove o alerta de desconexão                
-            //console.log("Conexão com Firebase reestabelecida.");
-        } else if (!novaConexao && isConnected) {
-            // Conexão perdida
-            isConnected = false;                
-            // Exibe o alerta para o usuário:
-            alert("ALERTA: Conexão com o servidor perdida! Os dados serão salvos localmente e enviados assim que a conexão retornar.");                
+        if (!mapaBotoes.has(idNovo)) {
+            const tabelas = {
+            'tbDados': document.querySelector('#tbDados'),
+            'tbDados2': document.querySelector('#tbDados2')
+            };
+            
+            if (idNovo) {
+                const nomeTabela = idNovo.includes('tbDados2') ? 'tbDados2' : 'tbDados';
+                const tabelaAlvo = tabelas[nomeTabela]; // Acesso direto ao objeto da tabela
+                const linha = tabelaAlvo.rows[parseInt(idNovo)];
+                const idLinha = `${linha.rowIndex}${'tbDados'}`;
+                mapaBotoes.set(idLinha, linha);
+                const botao = linha.querySelector('.btn-slr');
+                botao.classList.add('botao-salvo');
+                botao.textContent = 'Salvo';
+            };                
+        };    
+    });        
+
+    /*Ouvinta para capturar a inserção de etiquetas:*/
+    dbRef.on('child_changed', (snapshot) => { //(dbRef.on(''))
+        const dados = snapshot.val();
+        const key = snapshot.key;
+
+        // Verificamos se a mudança foi especificamente no campo 'etiqueta'
+        if (dados.etiqueta !== undefined) {
+            // Procura a linha correta na tabela de QUALQUER usuário
+            const linha = document.querySelector(`tr[data-key="${key}"]`);
+            
+            if (linha) {
+                const celula = linha.cells[2];
+                const divContainer = celula.querySelector('div');
+                let label = divContainer.querySelector('label');
+
+                // Se o label ainda não existe no HTML deste usuário, criamos agora
+                if (!label) {
+                    label = document.createElement("label");
+                    label.className = "LabelRepres";
+                    divContainer.appendChild(label);
+                }
+                
+                // Define ou atualiza o texto (vindo do servidor)
+                label.textContent = dados.etiqueta;
+            }
         }
     });
 
+    //Assim que o firebase recebe um valor do checkbox, ele dispara o evento para atualizar para os demais usuários:
+    dbRef.on('child_changed', (snapshot) => { 
+        const dados = snapshot.val();
+        const key = snapshot.key; //pega o valor key contido no firebase
+        
+        if (dados.estadoCheck !== undefined) {//verifica se a alteração foi realizada no checkbox
+            const linha = linhasSalvos.get(key);
+            let check = linha.querySelector('.check-custom');
+            check.checked = dados.estadoCheck;
+        }
+    })    
 
-
+    } else {
+        firebase.auth().signInAnonymously().catch(error => {
+            console.error("Erro no login:", error.message);
+        });
+    }
+});
 
     // Função auxiliar de Debounce, para aplicar um delay ao chamar a função aplicarFiltro
     function debounce(func, delay) {
@@ -72,18 +148,6 @@
     };
     }
     const filtroDebounced = debounce(aplicarFiltros, 700);//atrasa o filtro em 600ms, para a função não ser chamada assim que uma nova tecla é digitada
-
-    // DECLARAÇÃO DE VARIÁVEIS:
-    const campoFiltroNomeCargo = document.getElementById('filtroNomeCargo');
-    const campoFiltroIndice = document.getElementById('filtroIndice');
-    const opcao = document.querySelectorAll('input[name="opcaoNomeCargo"]');
-    const refTabelas = document.getElementById('tabelas');//as tabelas foram envolvidas nessa div para, a partir do elemento pai, com a delegação de eventos capturar os cliques nas duas tabelas
-    let numCaract; //é para puxar a tabela principal sempre que um caracter for apagado
-    let coluna = 2; //inicia com a referência para a coluna nome, e muda ao mudar a opção via radio
-    let controlLabel;//variável para iniciar a contagem do label, que será inserido na função inserirLabel        
-    const containerIndices = document.getElementById('botoesIndices');//obter os elementos que compõem os índices
-    let tabela;// Por se tratar de arquivos externos, fez-se necessária a delcaração em escopo global
-    const mapaBotoes = new Map();//armezanar os botões que foram salvos. O Set foi substituído, por armazenas apenas listas o que obriga o script percorrer a tabela em busca de um texto específico
 
     // Função para aplicar os filtros
     function aplicarFiltros() {
@@ -305,6 +369,7 @@
         const novaLinha = document.createElement("tr");
         
         novaLinha.setAttribute('data-key', key); // Armazena a chave para futuras atualizações/exclusões
+        linhasSalvos.set(key, novaLinha);
 
         //Criar células
         const tdNome = document.createElement("td");
@@ -386,39 +451,61 @@
         
     //VAMOS ADICIONAR DADOS À TABELA-RELATÓRIO:
     function povoarTbRelatorios() {
-        const divTabelaRelatorio = document.getElementById('tabelaRelatorio');
+        const divTabelaRelatorio = document.getElementById('div-tabelaRelatorio');
+        // Limpa a div antes de criar uma nova para evitar tabelas duplicadas
+        divTabelaRelatorio.innerHTML = ''; 
+
         const tabelaRelatorio = document.createElement('table');
         tabelaRelatorio.id = "tabelaRelatorio";
-        const estrutura = document.createElement('thead');
-        const estrutura2 = document.createElement('tr');
+
+        // --- ESTRUTURA DO CABEÇALHO (THEAD) ---
+        const estruturaHead = document.createElement('thead');
+        const linhaHead = document.createElement('tr');
         const cabecalho = document.createElement('th');
         cabecalho.textContent = 'NOME/CARGO';
-        estrutura2.appendChild(cabecalho);
-        estrutura.appendChild(estrutura2);           
-        tabelaRelatorio.appendChild(estrutura);
-        divTabelaRelatorio.appendChild(tabelaRelatorio);            
+        cabecalho.style.cursor = 'pointer'; // Indica que é clicável
+
+        linhaHead.appendChild(cabecalho);
+        estruturaHead.appendChild(linhaHead);
+        
+        // IMPORTANTE: Adiciona o THEAD direto na TABELA
+        tabelaRelatorio.appendChild(estruturaHead);
+
+        // --- ESTRUTURA DO CORPO (TBODY) ---
+        const corpoTabela = document.createElement('tbody');
+        tabelaRelatorio.appendChild(corpoTabela);
+
+        // Adiciona a tabela na DIV agora para ela já existir no DOM
+        divTabelaRelatorio.appendChild(tabelaRelatorio);
+
         const tabelaSalvos = document.getElementById('tabela-salvos');
         const linhasSalvos = tabelaSalvos.querySelectorAll('tr');
+
         linhasSalvos.forEach(linha => {
-            if (linha.cells[0].tagName === 'TH') return;
+            if (linha.cells.length === 0 || linha.cells[0].tagName === 'TH') return;
 
             const tdLinha = document.createElement('tr');
             const tdNomeCargo = document.createElement('td');
             tdNomeCargo.style.textAlign = 'center';
+
             for (let i = 0; i < linha.cells.length - 1; i++) {
                 const texto = linha.cells[i].textContent;
-
                 if (i === 0) {
-                    //O innerHTML é melhor que o textContent, pois vais adicionar elementos html ao texto
                     tdNomeCargo.innerHTML += `<strong>${texto}</strong><br>`;
                 } else {
-                    //neste caso também, pois vamos adicionar uma quebra de linha ao texto
                     tdNomeCargo.innerHTML += `${texto}<br>`;
                 }
             }
             tdLinha.appendChild(tdNomeCargo);
-            tabelaRelatorio.appendChild(tdLinha);
+            corpoTabela.appendChild(tdLinha); // Adiciona a linha ao TBODY
         });
+
+        // Inicializa o Tablesort após a estrutura estar correta e no DOM
+        try {
+            new Tablesort(tabelaRelatorio);
+        } catch (e) {
+            console.error("Erro ao carregar Tablesort:", e);
+        }
     }        
     function ImprimirRelatorio() {
         window.print();
@@ -431,7 +518,7 @@
         if (modal.style.display === 'flex') {                
             modal.style.display = 'none';
             } else {
-            const tabelaRelatorio = document.getElementById('tabelaRelatorio').replaceChildren();//mesmo que innerHTML = "" (para zerar as informações de toda a tabela)
+            const DivtabelaRelatorio = document.getElementById('div-tabelaRelatorio').replaceChildren();//mesmo que innerHTML = "" (para zerar as informações de toda a tabela)
             modal.style.display = 'flex';
             povoarTbRelatorios();                        
         }
@@ -468,79 +555,9 @@
             alertaIndice.style.display = 'none';
             campoFiltroIndice.style.marginBottom = '10px';               
         }            
-    });
+    });  
 
-    function carregarIdsFirebase(){//Função para buscar esses IDs no carregamento       
-        
-        //Nas versões anteriores, temos um script que baixa o banco completamente         
-
-        //Desta forma, vai apenas adicionar as atualizações, evitando consumo excessivo de dados:
-        dbRef.on('child_added',(snapshot) => {
-            const dado = snapshot.val();
-            const idNovo = dado.idBotao;//é justamente a juntação do índice da linha da tabela com o id da tabela
-            
-           if (!mapaBotoes.has(idNovo)) {
-                const tabelas = {
-                'tbDados': document.querySelector('#tbDados'),
-                'tbDados2': document.querySelector('#tbDados2')
-                };
-              
-                if (idNovo) {
-                    const nomeTabela = idNovo.includes('tbDados2') ? 'tbDados2' : 'tbDados';
-                    const tabelaAlvo = tabelas[nomeTabela]; // Acesso direto ao objeto da tabela
-                    const linha = tabelaAlvo.rows[parseInt(idNovo)];
-                    const idLinha = `${linha.rowIndex}${'tbDados'}`;
-                    mapaBotoes.set(idLinha, linha);
-                    const botao = linha.querySelector('.btn-slr');
-                    botao.classList.add('botao-salvo');
-                    botao.textContent = 'Salvo';
-                }                
-           }    
-        })   
-        
-    }
-    //Ouvinte de sincronização em tempo real da tabela-salvos
-    dbRef.on('child_added', (snapshot) => {
-        // A função 'on' é chamada uma vez para cada item existente 
-        // e depois sempre que um novo item é adicionado por qualquer usuário.
-        adicionarLinhaSalva(snapshot);
-    });
-    //Disparado assim que a página é iniciada/reiniciada
-    document.addEventListener('DOMContentLoaded', async() => {
-        // A página terminou de carregar o HTML
-        carregarIdsFirebase();
-        await carregarTabelasHTML(); //A função deve denecessáriamente ser carrega 'sincronamente', pois temos valores que devem ser completamente carregados
-        tabela = document.getElementById('tbDados');
-        });
-
-    /*Ouvinta para capturar a inserção de etiquetas:*/
-    dbRef.on('child_changed', (snapshot) => { //(dbRef.on(''))
-        const dados = snapshot.val();
-        const key = snapshot.key;
-
-        // Verificamos se a mudança foi especificamente no campo 'etiqueta'
-        if (dados.etiqueta !== undefined) {
-            // Procura a linha correta na tabela de QUALQUER usuário
-            const linha = document.querySelector(`tr[data-key="${key}"]`);
-            
-            if (linha) {
-                const celula = linha.cells[2];
-                const divContainer = celula.querySelector('div');
-                let label = divContainer.querySelector('label');
-
-                // Se o label ainda não existe no HTML deste usuário, criamos agora
-                if (!label) {
-                    label = document.createElement("label");
-                    label.className = "LabelRepres";
-                    divContainer.appendChild(label);
-                }
-                
-                // Define ou atualiza o texto (vinda do servidor)
-                label.textContent = dados.etiqueta;
-            }
-        }
-    });
-
+    
     //Captuar o evento de click no checkbox para a sincronização dos usuários:
     const tabelaclicada = document.querySelector('#tabela-salvos');//define o lugar do click
     tabelaclicada.addEventListener('click', function (e) {
@@ -552,16 +569,16 @@
             dbRef.child(key).update({estadoCheck: valorCaixa});//passar o valor da caixa para o firebase
         }
     })
-    //Assim que o firebase recebe um valor do checkbox, ele dispara o evento para atualizar para os demais usuários:
-    dbRef.on('child_changed', (snapshot) => { 
-        const dados = snapshot.val();
-        const key = snapshot.key; //pega o valor key contido no firebase
-        if (dados.estadoCheck !== undefined) { //verifica se a mudança ocorreu exatamente no estadoCheck
-            const linha = document.querySelector(`tr[data-key="${key}"]`); //percorre as linhas da tabela
-            let caixa = linha.querySelector('.check-custom');//ca´tura do elemento checkbox
-            caixa.checked = dados.estadoCheck;  //muda o estado do elemento
-        }
-    })
+
+    //Disparado assim que a página é iniciada/reiniciada
+    document.addEventListener('DOMContentLoaded', async() => {
+        // A página terminou de carregar o HTML        
+        await carregarTabelasHTML(); //A função deve denecessáriamente ser carrega 'sincronamente', pois temos valores que devem ser completamente carregados
+        tabela = document.getElementById('tbDados');          
+    });
+
+
+    
     /*
     Verificar os arquivos das versões anteriores
     */
@@ -586,3 +603,4 @@
         alert("Erro ao carregar uma das tabelas:", erro);
     }
 }
+

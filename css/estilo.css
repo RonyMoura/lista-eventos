@@ -25,6 +25,15 @@
             text-align: center;
             vertical-align: middle;
         }
+        /* Estilo das setinhas de ordenação usando pseudo-elementos para a tabela que está com funcionalidade de classificação*/
+        th[role="columnheader"]:after {
+            content: ' \2195'; /* Seta dupla cima/baixo */
+            padding-left: 5px;
+            color: black;
+        }
+        th[aria-sort="ascending"]:after { content: ' \25B2'; color: green} /* Seta para cima */
+        th[aria-sort="descending"]:after { content: ' \25BC'; color: red; } /* Seta para baixo */
+
         /*Estilização da tabela principal*/
         #tbDados tr td:nth-child(3){/*seleciona a tabela, as linhas e aplica a estilização em cada célula de cada linha da 3 coluna*/
             color: blue;
@@ -48,10 +57,10 @@
             word-break: normal;
         background-color: #FFFACD;
         }
-        #tabela-salvos tr:nth-child(even) {background-color: #FFDDA8}/*efeito zebra. Deve ser exatamente como está*/
+        #tabela-salvos tr:nth-child(even) {background-color: #FFDDA8}/*colorindo as linhas pares (even)*/
         
         /* Oculta a primeira coluna da tabela */
-        #tbDados th:first-child,
+        #tbDados th:first-child, /*first-child: primeira coluna, last-child: última coluna*/
         #tbDados td:first-child {
             display: none;
         }       
@@ -264,7 +273,7 @@
             }
             /* 3. Garante que a tabela use a largura total do papel */
             #tabelaRelatorio {
-                width: 99% !important;
+                width: 98% !important;
                 border-collapse: collapse;
             }
         }
