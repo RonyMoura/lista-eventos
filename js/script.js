@@ -210,6 +210,7 @@ firebase.auth().onAuthStateChanged((user) => {
         }else{
         numCaract = textoNomeCargo.length;//deve ser igualado para novamente, para forçar entrar neste if
         }
+        voltarInicio();
     }                           
     
     //FUNÇÃO A SER CHAMADA QUANDO OS RADIOS FOREM MODIFICADOS:
@@ -293,6 +294,7 @@ firebase.auth().onAuthStateChanged((user) => {
             containerIndices.style.display = 'none';                
         }
         campoFiltroIndice.style.marginBottom = '10px'//volta o valor para o padrão definido inicialmente
+        voltarInicio();
     }      
     //Modificada função inserirLabel
     function inserirLabel(e){
@@ -604,3 +606,14 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 }
 
+function voltarInicio() {
+    //Voltar para a posição do cabeçalho (primeira linha) da tabela:
+        const primeiraLinha = tabela.querySelector('tr:first-child');
+        //const cabecalho = tabela.querySelector('thead');
+        if (primeiraLinha) {//Caso dê algum erro na leitura da tabela, evita que o navegador de um erro fatal
+            primeiraLinha.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end' // ou 'start'
+            });    
+        }
+}
