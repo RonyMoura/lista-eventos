@@ -33,7 +33,7 @@ firebase.auth().onAuthStateChanged((user) => {
     if (user) {
         // Agora o login foi feito, podemos definir o banco com segurança
         database = firebase.database();
-        dbRef = database.ref('autoridades_presentes');
+        dbRef = database.ref('PJ-Santos');
         
         //console.log("Acesso autorizado para:", user.uid);
 
