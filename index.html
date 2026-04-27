@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Pesquisa de nomes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!--Essencial para ajustar a tela em dispositivos móveis-->
+    <link rel="stylesheet" href="css/estilo.css">
+    </head>
+<body>
+    <!--Botões e comandos iniciais da página-->    
+    <h2>Lista geral</h2>
+    <p style="text-align: center; margin-bottom: 5px;">Para uma busca mais rápida, os nomes estão sem acentos.    
+
+    <div class="container-botoes">        
+        
+        <div class="linha-container">
+        <!-- Campo de filtro específico: busca apenas na primeira coluna-->
+        <input style="width: 57%;" type="text" id="filtroIndice" placeholder="Filtrar pelo índice..." name="inputs">
+        <button class="btn-circular btn-verde" onclick="abrirFormulario()">
+        <span class="icone-i">I</span>
+        </button>
+        <button class="btn-circular btn-verde" onclick="abrirOpcoesTabela()">
+        <span class="icone-t">T</span>
+        </button>        
+        <button class="btn-circular" style="margin-left: auto;" id="btn-descer">
+        <span class="seta"></span>
+        </button>
+        
+        </div>
+
+        <p style="display: none;" id="opcaoIndice">Escolha uma opção:</p> 
+        <!--Dentro desse container, vamos simular botões para filtrar a tabela pelo índice-->
+        <div style="display: none;" id="botoesIndices" class="botoesIndices">
+            <div class='indices'>CASA</div>
+
+<div class='indices'>ÓRGÃO</div>
+<div class='indices'>APMP</div>
+<div class='indices'>PGJ ESTADOS E UNIÃO</div>
+<div class='indices'>CORREGEDORES GERAIS MP ESTADOS E UNIÃO</div>
+<div class='indices'>DIRETORES ESMP</div>
+<div class='indices'>OUVIDORES-GERAIS</div>
+<div class='indices'>CONSELHO NACIONAL MP</div>
+<div class='indices'>CONSELHO NACIONAL DE JUSTIÇA</div>
+<div class='indices'>CONAMP</div>
+<div class='indices'>ASSOCIAÇÕES MP ESTADOS E UNIÃO</div>
+<div class='indices'>EXECUTIVO FEDERAL</div>
+<div class='indices'>EXECUTIVO ESTADUAL</div>
+<div class='indices'>EXECUTIVO MUNICIPAL</div>
+<div class='indices'>LEGISLATIVO FEDERAL</div>
+<div class='indices'>LEGISLATIVO ESTADUAL</div>
+<div class='indices'>LEGISLATIVO MUNICIPAL</div>
+<div class='indices'>STF</div>
+<div class='indices'>STJ</div>
+<div class='indices'>TSE</div>
+<div class='indices'>TST</div>
+<div class='indices'>STM</div>
+<div class='indices'>JUDICIÁRIO MILITAR</div>
+<div class='indices'>JUDICIÁRIO</div>
+<div class='indices'>TCU</div>
+<div class='indices'>MPTCU</div>
+<div class='indices'>TCE</div>
+<div class='indices'>MPC – SP</div>
+<div class='indices'>TCM</div>
+<div class='indices'>FORÇAS ARMADAS E POLÍCIAS</div>
+<div class='indices'>AUTORIDADES ECLESIÁSTICAS</div>
+<div class='indices'>Ent. de Classe - Jurídico</div>
+<div class='indices'>Ent. de Classe - Medicina</div>
+<div class='indices'>Fundações/Empresas/Autarquias/Ongs</div>
+<div class='indices'>CÔNSUL</div>
+<div class='indices'>ESCOLAS</div>
+<div class='indices'>FAC. E UNIVERSIDADES</div>
+<div class='indices'>IMPRENSA</div>
+<div class='indices'>JURISTAS</div>
+<div class='indices'>DIVERSOS</div>
+<div class='indices'>DESEMB. TJSP</div>
+<div class='indices'>PJs Regional</div>
+<div class='indices'>Servidores</div>
+<div class='indices'>Judiciário Local</div>
+<div class='indices'>Defensoria Pública</div>
+<div class='indices'>OAB</div>
+<div class='indices'>Polícias</div>
+<div class='indices'>GCM</div>
+<div class='indices'>LISTA MEMBROS</div>
+
+
+        </div>
+
+
+        <!--Criar um div para manter os elementos na mesma linha-->    
+        <div class="linha">
+            <!-- Campo de entrada para o filtro -->
+            <input class="input_person" type="text" id="filtroNomeCargo" placeholder="Digite para filtrar..." name="inputs">
+            <button onclick="limparInput()">Limpar campos</button>
+        </div>
+        
+        <div class="linha">
+            <span>Filtrar por:</span>
+
+            <label class="radio-label">
+                <input type="radio" name="opcaoNomeCargo" value=2 id="radioA" checked>
+                Nome
+            </label>
+
+            <label class="radio-label">
+                <input type="radio" name="opcaoNomeCargo" value=3 id="radioB">
+                Cargo
+            </label>
+        </div>        
+        
+    </div>    
+
+    <div id="tabelas"><!--encapsulamento das duas tabelas para aplicar a delegação de eventos-->    
+        <!--As tabelas externas serão inseridas aqui-->
+    </div>     
+
+    <!--TABELA ONDE OS DADOS SERÃO GRAVADOS-->
+    <h1>Autoridades presentes:</h1>
+    <div id="teste"></div>
+    <table id="tabela-salvos">
+        <thead>
+            <tr>
+                <th>VOCATIVO</th>
+                <th>NOME</th>
+                <th>CARGO</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Linhas serão adicionadas aqui -->
+        </tbody>
+    </table>
+    
+    <!--VAMOS ADICIONAR UM CONTAINER PARA VISUALIZAR A TABELA DOS DADOS SALVOS, COMO SE FOSSE UM RELATÓRIO:-->
+    <div style="text-align: center; margin-top: 10px;">
+        <button onclick="toggleModal()">Destacar tabela</button>
+        </div>    
+    <div id="meuModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Relação de autoridades presentes (em ordem de precedência)</h2><!--ADICIONAR A FUNCIONALIDADE PARA EXIBIR EM ORDEM DE PRECEDÊNCIA-->
+        <div id="div-tabelaRelatorio"></div>
+        <button style="margin-top: 10px;" onclick="toggleModal()">Fechar</button>
+        <button style="margin-left: 20px;" onclick="ImprimirRelatorio()">Imprimir</button>        
+    </div> 
+     
+
+    <!--Biblioteca para aplicar a funcionalidade de classificação da tabela - os arquivos foram salvos diretamente:
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.number.min.js"></script>
+    -->
+    
+    <!--Implementação de bibliotecas para comunicação com o firebase-->    
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script><!--Para utilizar com a autenticação de usuários-->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+
+
+    
+    <!--Implementação de arquivos externos-->
+    <script src="js/script.js"></script>
+    <script src="js/tablesort.min.js"></script>
+    <script src="js/tablesort.namber.min.js"></script>    
+</div>
+
+<!--Formulário para a inserção de nova linha na tabela-->
+    <div id="modalFormulario" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:100; justify-content:center; align-items:center; color: black;">
+    
+        <div style="background:white; padding:40px; border-radius:15px; width:350px; box-shadow: 0 0 20px rgba(0,0,0,0.5); position: relative;">
+            <h2 style="margin-top:0; color:#333;">Novo Cadastro</h2>
+            
+            <div style="display:flex; flex-direction:column; gap:15px;">
+                <input type="text" id="inputNome" placeholder="Nome completo" style="padding:10px; border:1px solid #ccc; border-radius:5px;">
+                <input type="text" id="inputCargo" placeholder="Cargo" style="padding:10px; border:1px solid #ccc; border-radius:5px;">
+                <input type="text" id="inputVocativo" placeholder="Vocativo (Ex: Senhor(a) Doutor(a))" style="padding:10px; border:1px solid #ccc; border-radius:5px;">
+                <input type="text" id="inputClassificacao" placeholder="Precedência: se não for preenchido, assumirá 9999" style="padding:10px; border:1px solid #ccc; border-radius:5px;">
+                <div style="display:flex;">
+                    <button onclick="abrirModalConsulta(); renderizarCargosNoModal()" style="padding:5px 15px; background:#eee; border:none; border-radius:5px; cursor:pointer;">Consultar</button>                    
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
+                <button onclick="fecharModal()" style="padding:10px 20px; background:#eee; border:none; border-radius:5px; cursor:pointer;">Cancelar</button>
+                <button onclick="salvarDados()" style="padding:10px 20px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Inserir na tabela</button>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal para a escolha da tabela-->
+    <div id="modalOpcaoTabela" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:100; justify-content:center; align-items:center; color: black;">
+    
+        <div style="background:white; padding:40px; border-radius:15px; width:350px; box-shadow: 0 0 20px rgba(0,0,0,0.5); position: relative;">
+            <h2 style="margin-top:0; color:#333;">Escolha a tabela onde os dados serão salvos</h2>
+            
+            <div style="display:flex; flex-direction:column; gap:15px;">
+                <select id="selectTabela" onchange="finalizarEscolha()" style="padding:10px; border-radius:5px; border:1px solid #ccc; width: 100%;">
+                    <option value="" disabled selected>Selecione uma tabela...</option>
+                    <option value="tabela-1">Tabela - 1</option>
+                    <option value="tabela-2">Tabela - 2</option>
+                    <option value="tabela-3">Tabela - 3</option>
+                    <option value="tabela-4">Tabela - 4</option>
+                    <option value="tabela-5">Tabela - 5</option>
+                </select>                
+            </div>
+            <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
+                <button onclick="fecharModal2()" style="padding:10px 20px; background:#eee; border:none; border-radius:5px; cursor:pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal para consultar os presentes-->
+    <div id="modalConsultaPreced" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:300; justify-content:center; align-items:center; color: black;">
+    <div style="background:white; padding:30px; border-radius:15px; width:500px; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); position: relative;">
+        
+        <h2 style="margin-top:0; margin-bottom: 20px; color:#333; flex-shrink: 0;">Consultar Precedência</h2>
+        
+        <div style="overflow-y: auto; flex-grow: 1; border: 1px solid #eee; border-radius: 5px;">
+            <table id="tabelaPrecedenciaModal" class="tablesorter" style="width:100%; border-collapse: collapse; min-width: 400px;">
+                <thead style="position: sticky; top: 0; background: #f9f9f9; z-index: 10;">
+                    <tr style="text-align: left; border-bottom: 2px solid #ddd;">
+                        <th style="padding: 12px; white-space: nowrap; width: 50px; text-align: center;">ID</th>
+                        <th style="padding: 12px;">Cargo</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaModal">
+                    </tbody>
+            </table>
+        </div>
+
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px; flex-shrink: 0;">
+            <button onclick="fecharModal3()" style="padding:10px 20px; background:#eee; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">Fechar</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
