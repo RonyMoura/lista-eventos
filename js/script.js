@@ -224,7 +224,7 @@ firebase.auth().onAuthStateChanged((user) => {
                     idClassificacao: idClassificacao,
                     tabelaEscolhida: minhaTabelaAtual,
                     idBotao: idBotao,//id gerado para identificação da linha salva
-                    timestamp: Date.now() // Ajuda na ordenação e unicidade                        
+                    //timestamp: Date.now() // Ajuda na ordenação e unicidade                        
                 };
 
                 //LINHA ACRESCENTADA PARA CORRIGIR O FUNCIONAMENTO DA COR DO BOTÃO SALVAR:
@@ -310,7 +310,7 @@ firebase.auth().onAuthStateChanged((user) => {
         const campoCargo = document.getElementById('inputCargo');
         const campoVocativo = document.getElementById('inputVocativo');
         const campoClassificacao = document.getElementById('inputClassificacao');
-        const precedencia = campoClassificacao.value === "" ? 9999 : campoClassificacao.value.trim();
+        const precedencia = campoClassificacao.value === "" ? Date.now() : campoClassificacao.value.trim();// Se a precedência estiver em branco, assume o momento da inclusão
 
         // 2. Extrai os valores
         const novaLinha = {
@@ -318,7 +318,8 @@ firebase.auth().onAuthStateChanged((user) => {
             cargo: campoCargo.value.trim(),
             vocativo: campoVocativo.value.trim(),
             idClassificacao: precedencia,
-            timestamp: Date.now()
+            tabelaEscolhida: minhaTabelaAtual,
+            //timestamp: Date.now()
         }        
         
         if (campoNome.value === "" || campoCargo.value === "" || campoVocativo.value === "") {
@@ -540,11 +541,22 @@ firebase.auth().onAuthStateChanged((user) => {
         });
 
         // Inicializa o Tablesort após a estrutura estar correta e no DOM
+        let sortable;
         try {
-            new Tablesort(tabelaRelatorio);
-        } catch (e) {
+            sortable = new Tablesort(tabelaRelatorio), {
+                descending: false // Garante que a direção inicial preferencial seja crescente
+            };
+            } catch (e) {
             console.error("Erro ao carregar Tablesort:", e);
         }
+
+        // 2. Simula o clique no cabeçalho para ordenar imediatamente
+        // Buscamos o 'th' dentro da tabela que acabamos de criar
+        const thParaClicar = tabelaRelatorio.querySelector('th');
+        if (thParaClicar) {
+            thParaClicar.click();
+        }
+
     }        
     function ImprimirRelatorio() {
         window.print();
