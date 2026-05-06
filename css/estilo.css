@@ -394,3 +394,8 @@
     font-size: 11px;
     color: #888; /* Opcional: ajustar a cor para combinar com o tamanho */
 }
+
+/*Definição de cor de fundo das autoridades mais importantes*/
+.cor-fundo{
+    background-color: #ffe792;
+}

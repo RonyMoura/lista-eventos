@@ -2,15 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Pesquisa de nomes</title>
+    <title>Lista de autoridades</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"><!--Essencial para ajustar a tela em dispositivos móveis-->
     <link rel="stylesheet" href="css/estilo.css">
     </head>
 <body>
     <!--Botões e comandos iniciais da página-->    
     <h2>Lista geral</h2>
-    <p style="text-align: center; margin-bottom: 5px;">Para uma busca mais rápida, os nomes estão sem acentos.    
-
     <div class="container-botoes">        
         
         <div class="linha-container">
@@ -209,13 +207,13 @@
     <div id="modalConsultaPreced" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:300; justify-content:center; align-items:center; color: black;">
     <div style="background:white; padding:30px; border-radius:15px; width:500px; max-width: 90%; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); position: relative;">
         
-        <h2 style="margin-top:0; margin-bottom: 20px; color:#333; flex-shrink: 0;">Consultar Precedência</h2>
+        <h2 style="margin-top:0; margin-bottom: 20px; color:#333; flex-shrink: 0;">Consultar presentes</h2>
         
         <div style="overflow-y: auto; flex-grow: 1; border: 1px solid #eee; border-radius: 5px;">
             <table id="tabelaPrecedenciaModal" class="tablesorter" style="width:100%; border-collapse: collapse; min-width: 400px;">
                 <thead style="position: sticky; top: 0; background: #f9f9f9; z-index: 10;">
                     <tr style="text-align: left; border-bottom: 2px solid #ddd;">
-                        <th style="padding: 12px; white-space: nowrap; width: 50px; text-align: center;">ID</th>
+                        <th style="padding: 12px; white-space: nowrap; width: 50px; text-align: center;">Precedência</th>
                         <th style="padding: 12px;">Cargo</th>
                     </tr>
                 </thead>
