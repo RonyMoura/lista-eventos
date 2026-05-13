@@ -396,6 +396,10 @@
 }
 
 /*Definição de cor de fundo das autoridades mais importantes*/
-.cor-fundo{
-    background-color: #ffe792;
+.mesa-h{
+    background-color: #fffba8;
+}
+
+.mesa-e{
+    background-color: #74e4e4;
 }
