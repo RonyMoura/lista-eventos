@@ -39,8 +39,7 @@
             color: blue;
             font-weight: bold;
             min-width: 65px;/*garante um espaçamento mínimo da coluna em questão*/
-            background-color: aqua;
-        }
+            }
         /*aplicar o tamanho mínimo para a coluna de nomes também dessa tabela*/
         #tbDados2 tr td:nth-child(3){
             min-width: 65px;/*garante um espaçamento mínimo da coluna em questão*/
