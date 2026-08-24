@@ -276,5 +276,10 @@
                 width: 98% !important;
                 border-collapse: collapse;
             }
+
+            /*Parâmetros para este evento*/
+            .coalizao {
+                background-color: aqua;
+            }
         }
     
